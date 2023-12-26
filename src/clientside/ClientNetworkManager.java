@@ -3,35 +3,29 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 import misc.Message;
+import serverside.Server;
 import misc.Chatroom;
+import misc.Client;
 
-public class ClientNetworkManager {
+public class ClientNetworkManager extends Client{
 	
 	private final String IP = "127.0.0.1";
-	private final int PORT = 6000;
-	private ObjectOutputStream outputStream;
-	private ObjectInputStream inputStream;
-	private Socket socket = null;
-	private BufferedReader reader;
-	private String username;
-	private String password;
-	
-	static ArrayList<Chatroom> chatroomList;
-	static Chatroom chatroom;
-	//start a thread that periodically asks for up to date chatroom list
+	private final int PORT = 6000;	
+	ArrayList<ArrayList<String>> chatroomList;
+	//request chatrooms whenver need to,
 	
 	public ClientNetworkManager()
 	{
+		connect();
 	}
 	
-	public boolean LogIn(String username, String password) throws IOException
+	public boolean attemptLogIn(String username, String password) throws IOException
 	{
-		Message logInRequest = new Message(username+"?"+password, username, Message.LOGIN_REQUEST);
+		Message logInRequest = new Message(username+DELIMETER+password, username, Message.LOGIN_REQUEST);
 		sendMessage(logInRequest);
+		
 		Message response = readMessage();
-		if (response.getSender().equals(Message.FROM_SERVER) 
-				&& response.getCommandType() == Message.LOGIN_REQUEST 
-				&& response.logInIsApproved())
+		if (response.logInIsApproved())
 		{
 			this.username = username;
 			this.password = password;
@@ -39,29 +33,8 @@ public class ClientNetworkManager {
 		}
 		return false;
 	}
-	
-	private void readInput()
-	{
-		System.out.println("reading console input...");
-		String message = "";
-		while (!message.equals("EXIT"))
-		{
-			try
-			{
-				message = reader.readLine();
-				Message msg = new Message(message,"Client");
-				sendMessage(msg);
-			}
-			catch(IOException e)
-			{
-				System.out.println("failed to read console input!");
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	
-	public void connect()
+		
+	private void connect()
 	{
 		System.out.println("connecting to,\nIP: " + IP + "\n PORT: " + PORT);
 		try
@@ -71,17 +44,12 @@ public class ClientNetworkManager {
 			inputStream = new ObjectInputStream(socket.getInputStream());
 			System.out.println("success!");
 		}
-		catch(Exception e)
+		catch(IOException e)
 		{
 			System.out.println("failed to connect to server!");
 			e.printStackTrace();
 			System.exit(0);
-		}
-		finally
-		{
-			System.out.println("connect method complete\n- - - - -");
-		}
-		
+		}	
 	}
 	
 	private void startListeningThread()
@@ -99,62 +67,46 @@ public class ClientNetworkManager {
 			e.printStackTrace();
 			System.exit(0);
 		}
-		finally
-		{
-			System.out.println("startListeningThread method complete\n- - - - -");
-		}
+	}
+		
+	public void fetchChatroomList()
+	{
+		System.out.println("requesting chatroom list...");
+		Message chatroomRequest = new Message("", username, Message.CHATROOM_LIST_REQUEST);
+		sendMessage(chatroomRequest);
+		System.out.println("awaiting chatroom...");
+		chatroomList = readChatRoomList();
+		System.out.println(chatroomList.toString());
 	}
 	
-	public void sendMessage(Message message) throws IOException
+	private ArrayList<ArrayList<String>> readChatRoomList()
 	{
-		outputStream.writeObject(message);
-	}
-	
-
-	public Message readMessage()
-	{
-		System.out.println("awaiting message...");
 		try
 		{
-			return (Message) inputStream.readObject();
+			return (ArrayList<ArrayList<String>>) inputStream.readObject();
 		}
-		catch (Exception e)
+		catch (IOException e)
 		{
-			System.out.println("failed to read message!");
+			System.out.println("InputStream is closed");
 			e.printStackTrace();
 			return null;
 		}
-		finally
+		catch (ClassNotFoundException e)
 		{
-			System.out.println("readMessage method complete\n- - - - -");
-		}
-	}
-	
-	
-	public void requestChatroomList()
-	{
-		//System.out.println("requesting chatroom list...");
-		//Message chatroomRequest = new Message("", username, Message.LOGIN_REQUEST);
-		System.out.println("awaiting chatroom...");
-		try
-		{
-			chatroomList = (ArrayList<Chatroom>) inputStream.readObject();
-			String allChatrooms = "";
-			for (Chatroom room: chatroomList)
-			{
-				allChatrooms = allChatrooms + room.getChatroomProperties() + "\n";
-			}
-			System.out.println(allChatrooms);
-		}
-		catch (Exception e)
-		{
-			System.out.println("failed to read chatroom!");
+			System.out.println("Incompatible object cast");
 			e.printStackTrace();
-		}
-		finally
-		{
-			System.out.println("readChatroomRequest method complete\n- - - - -");
+			return null;
 		}
 	}
+		
+	//@override
+	public void disconnect()
+	{
+		//send a disconnect message
+		//server disconnects this client
+		//close all threads/clean up
+		
+	}
+	
 		
 }

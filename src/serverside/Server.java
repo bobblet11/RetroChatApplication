@@ -1,24 +1,27 @@
 package serverside;
 import java.net.*;
 import java.util.ArrayList;
-
+import java.io.*;
 import misc.Chatroom;
+import misc.Client;
 
 public class Server {
 	
-	public static void main(String args[])
+	public static void main(String args[]) throws IOException
 	{
 		Server server = new Server();
 	}
 	
 	private final int PORT = 6000;
 	private ServerSocket serverSock = null;
-	static ArrayList<Client> clients;
-	static ArrayList<Chatroom> chatrooms;
+	//remove clients when chatrooms implementation is done
+	public static ArrayList<Chatroom> chatrooms;
+	public static ArrayList<Client> clients;
 	
-	public Server()
+	public Server() throws IOException
 	{
 		initServer();	
+		//will replace with chatrooms when ready
 		clients = new ArrayList<Client>();
 		chatrooms = new ArrayList<Chatroom>();
 		
@@ -32,25 +35,22 @@ public class Server {
 	
 	private void receiveClients()
 	{
+		System.out.println("listening for clients...");
 		Socket tempClientHolder = null;
-		
 		while (true)
 		{
-			System.out.println("listening for clients...");
 			try
 			{
 				tempClientHolder = serverSock.accept();
-				
 				System.out.println("client connection from " + tempClientHolder.toString());
 				Client client = new Client(tempClientHolder);	
-				clients.add(client);
+				chatrooms.get(0).addClient(client);
 				ServerListenerThread listenerThread = new ServerListenerThread(client);
 				listenerThread.start();
 				
 			}
 			catch (Exception e)
 			{
-				System.out.println("exception caught!");
 				System.out.println("client connection request rejected");
 				e.printStackTrace();
 			}
@@ -61,24 +61,11 @@ public class Server {
 		}
 	}
 	
-	private void initServer()
+	private void initServer() throws IOException
 	{
 		System.out.println("starting server on PORT: " + PORT);
-		try
-		{
-			serverSock = new ServerSocket(PORT);
-			System.out.println("success!");
-		}
-		catch(Exception e)
-		{
-			System.out.println("failed to initialise the server!");
-			e.printStackTrace();
-			System.exit(0);
-		}
-		finally
-		{
-			System.out.println("initServer method complete\n- - - - -");
-		}
+		serverSock = new ServerSocket(PORT);
+		System.out.println("success!");
 	}
 	
 }

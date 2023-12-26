@@ -1,11 +1,9 @@
 package misc;
 import java.util.*;
-
-import serverside.Client;
-
 import java.io.*;
 
-public class Chatroom implements Serializable{
+public class Chatroom{
+	
 	private ArrayList<Client> participants;
 	private int chatroomID;
 	
@@ -36,9 +34,17 @@ public class Chatroom implements Serializable{
 		return participants;
 	}
 	
-	public String getChatroomProperties()
+	public ArrayList<String> getChatroomProperties()
 	{
-		return participants.toString() + "?" + chatroomID;
+		ArrayList<String> out = new ArrayList<String>();
+		out.add(Integer.toString(chatroomID));
+		
+		for (Client client : participants)
+		{
+			out.add(client.getUsername());
+		}
+		return out;
+		
 	}
 	
 	public int getChatroomID()

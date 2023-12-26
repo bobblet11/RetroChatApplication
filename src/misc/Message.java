@@ -5,9 +5,9 @@ public class Message implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private final static int STANDARD = 0;
-	private final static int SERVER_COMMAND = 1;
-	private final static int NULL_COMMAND_TYPE = -1;
+	public final static int STANDARD = 0;
+	public final static int SERVER_COMMAND = 1;
+	public final static int NULL_COMMAND_TYPE = -1;
 	
 	//types of commands
 	public final static int CHATROOM_LIST_REQUEST = 0;
@@ -116,7 +116,7 @@ public class Message implements Serializable {
 	
 	public boolean logInIsApproved()
 	{
-		if (message.equals(APPROVED))
+		if (message.equals(APPROVED) && sender.equals(FROM_SERVER) && commandType == Message.LOGIN_REQUEST)
 		{
 			return true;
 		}
