@@ -38,11 +38,13 @@ public class Chatroom{
 	{
 		ArrayList<String> out = new ArrayList<String>();
 		out.add(Integer.toString(chatroomID));
-		
+		int count=0;
 		for (Client client : participants)
 		{
 			out.add(client.getUsername());
+			count++;
 		}
+		out.add(Integer.toString(count));
 		return out;
 		
 	}
@@ -59,5 +61,17 @@ public class Chatroom{
 			System.out.println(c.getUsername() + "\t" + c.getSocket());
 		}
 	}
+	
+//	static ArrayList<String> formatChatroomList(ArrayList<ArrayList<String>> chatroomList)
+//	{
+//		String chatroom = "";
+//		ArrayList<String> out = new ArrayList<String>();
+//		for (ArrayList<String> room : chatroomList)
+//		{
+//			chatroom = room.get(0) + "?" + room.get(room.size()-1);
+//			out.add(chatroom);
+//		}
+//		return out;
+//	}
 	
 }

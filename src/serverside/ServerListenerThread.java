@@ -6,7 +6,6 @@ import misc.Message;
 public class ServerListenerThread extends Thread{
 	
 	private Client client;
-	private Chatroom chatroom;
 	private final int MAX_LOGIN_ATTEMPTS = 3;
 	private int loginAttempts = 0;
 	private Message currentMsg;
@@ -34,7 +33,7 @@ public class ServerListenerThread extends Thread{
 			{
 				case Message.NULL_COMMAND_TYPE: //standard message
 				{
-					for (Client c : Server.clients)
+					for (Client c : Server.chatrooms.get(client.getConnectedChatroomID()).getParticipants())
 					{
 						if (!c.equals(client))
 							c.sendMessage(currentMsg);
@@ -48,6 +47,18 @@ public class ServerListenerThread extends Thread{
 				}
 				case Message.JOIN_CHATROOM_REQUEST:
 				{
+					int chatIDtoJoin = Integer.parseInt(currentMsg.getMessageBody());
+					Server.chatrooms.get(chatIDtoJoin).addClient(client);
+					client.setConnectedChatroomID(chatIDtoJoin);
+					client.sendMessage(new Message(Message.APPROVED, Message.FROM_SERVER, Message.JOIN_CHATROOM_REQUEST));
+					break;
+				}
+				case Message.EXIT_CHATROOM_REQUEST:
+				{
+					int chatIDtoJoin = Integer.parseInt(currentMsg.getMessageBody());
+					Server.chatrooms.get(chatIDtoJoin).removeClient(client);
+					client.setConnectedChatroomID(-1);
+					client.sendMessage(new Message(Message.APPROVED, Message.FROM_SERVER, Message.EXIT_CHATROOM_REQUEST));
 					break;
 				}
 				case Message.LOGIN_REQUEST:

@@ -103,6 +103,16 @@ public class Client{
 		username = name;
 	}
 	
+	public void setConnectedChatroomID(int id)
+	{
+		connectedChatroomID = id;
+	}
+	
+	public int getConnectedChatroomID()
+	{
+		return connectedChatroomID;
+	}
+	
 	public String getUsername()
 	{
 		return username;

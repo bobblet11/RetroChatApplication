@@ -123,5 +123,22 @@ public class Message implements Serializable {
 		return false;
 	}
 	
+	public boolean joinChatroomIsApproved()
+	{
+		if (message.equals(APPROVED) && sender.equals(FROM_SERVER) && commandType == Message.JOIN_CHATROOM_REQUEST)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean exitChatroomIsApproved()
+	{
+		if (message.equals(APPROVED) && sender.equals(FROM_SERVER) && commandType == Message.EXIT_CHATROOM_REQUEST)
+		{
+			return true;
+		}
+		return false;
+	}
 	
 }

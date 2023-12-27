@@ -1,7 +1,12 @@
 package clientside;
 import javax.swing.*;
+import javax.swing.event.*;
+
+import misc.Message;
+
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 public class ClientGUI {
 	
@@ -37,7 +42,7 @@ public class ClientGUI {
 	private JButton submit;
 	private JLabel authorisationResult;
 	
-	//serverListPgae
+	//serverListPage
 	private JPanel serverListPage;
 	private final static String SERVERLIST_CARD = "SERVERLIST_CARD";
 	private final String SERVERPAGE_TITLE = "Chatrooms";
@@ -46,17 +51,23 @@ public class ClientGUI {
 	private final String MEMBERS = "Members";
 	private JLabel serverListPageTitle;
 	private JLabel serverListTitle;
-	private JLabel memberListTitle1;
+	private JLabel memberListTitle;
 	private JButton join;
 	private JPanel leftHalf;
 	private JPanel rightHalf;
 	private JPanel controllerPanel1;
+	DefaultListModel<String>  chatroomListModel;
+	JList<String> chatroomList;
+	DefaultListModel<String>  participantsListModel;
+	JList<String> participantsList;
+	JScrollPane participantsScrollPane;
 	
 	//messagingPage
 	private JPanel messagePage;
 	private final static String MESSAGING_CARD = "MESSAGING_CARD";
 	private final String MESSAGING_PAGE_TITLE = "TITLE";
 	private final String SEND = "Send";
+	private final String LEAVE = "Leave";
 	private JLabel messagingPageTitle;
 	private JPanel controllerPanel2;
 	private JLabel memberListTitle2;
@@ -64,9 +75,12 @@ public class ClientGUI {
 	private JScrollPane scrollMessages;
 	private JScrollPane scrollParticipants;
 	private JPanel rightParticipantsPanel;
-	private JPanel rightParticipantsList;
 	private JButton sendMessageButton;
+	private JButton leaveChatroomButton;
 	private JTextField messageInput;
+	DefaultListModel<String>  participantsListModel2;
+	JList<String> participantsList2;
+	JScrollPane participantsScrollPane2;
 	
 	ClientNetworkManager networkManager;
 	public ClientGUI(ClientNetworkManager networkManager)
@@ -122,16 +136,21 @@ public class ClientGUI {
 		messagePage = new JPanel(new BorderLayout());
 		
 		//page title
+		JPanel top = new JPanel();
 		messagingPageTitle = new JLabel(MESSAGING_PAGE_TITLE);
 		messagingPageTitle.setFont(messagingPageTitle.getFont().deriveFont(40.0f));
 		messagingPageTitle.setHorizontalAlignment(JLabel.CENTER);
+		leaveChatroomButton = new JButton(LEAVE);
+		leaveChatroomButton.addActionListener(new LeaveButtonListener());
+		top.add(messagingPageTitle);
+		top.add(leaveChatroomButton);
 		
 		//messages
 		leftTextPanel = new JTextArea(100,10);
 		leftTextPanel.setEditable(false);
 		scrollMessages = new JScrollPane(leftTextPanel);
 		scrollMessages.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-		scrollMessages.setPreferredSize(new Dimension(380, 450));
+		scrollMessages.setPreferredSize(new Dimension(280, 450));
 		
 		//participants
 		rightParticipantsPanel = new JPanel(new BorderLayout());
@@ -140,15 +159,14 @@ public class ClientGUI {
 		memberListTitle2.setFont(memberListTitle2.getFont().deriveFont(12.0f));
 		memberListTitle2.setHorizontalAlignment(JLabel.LEFT);
 		//members list
-		rightParticipantsList = new JPanel();
-		rightParticipantsList.setPreferredSize(new Dimension(20, 350));		
-		scrollParticipants = new JScrollPane(rightParticipantsList);
-		scrollParticipants.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-		scrollParticipants.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		participantsListModel2 = new DefaultListModel<>();
+		participantsList2 = new JList(participantsListModel2);
+		participantsScrollPane2 = new JScrollPane(participantsList2);
+		
 		//adding
+		rightParticipantsPanel.setPreferredSize(new Dimension(180, 450));
 		rightParticipantsPanel.add(memberListTitle2, BorderLayout.NORTH);
-		rightParticipantsPanel.add(scrollParticipants, BorderLayout.SOUTH);
-		rightParticipantsPanel.setPreferredSize(new Dimension(80, 450));
+		rightParticipantsPanel.add(participantsScrollPane2, BorderLayout.CENTER);
 		
 		//controller
 		controllerPanel2 = new JPanel();
@@ -161,7 +179,7 @@ public class ClientGUI {
 		controllerPanel2.add(sendMessageButton);
 		
 		//final adding
-		messagePage.add(messagingPageTitle,BorderLayout.NORTH);
+		messagePage.add(top,BorderLayout.NORTH);
 		messagePage.add(scrollMessages, BorderLayout.WEST);
 		messagePage.add(rightParticipantsPanel, BorderLayout.EAST);
 		messagePage.add(controllerPanel2,BorderLayout.SOUTH);
@@ -192,9 +210,16 @@ public class ClientGUI {
 		serverListTitle = new JLabel(SERVERLIST_TITLE);
 		serverListTitle.setFont(serverListTitle.getFont().deriveFont(20.0f));
 		serverListTitle.setHorizontalAlignment(JLabel.LEFT);
+		//chatroomsList
+		chatroomListModel = new DefaultListModel<>();
+		chatroomList = new JList(chatroomListModel);
+		JScrollPane chatroomScrollPane = new JScrollPane(chatroomList);
+		chatroomList.addListSelectionListener(new ServerSelectListener());
+		leftHalf.add(chatroomScrollPane, BorderLayout.CENTER);
 		//controller
 		controllerPanel1 = new JPanel();
 		join = new JButton(JOIN);
+		join.addActionListener(new JoinButtonListener());
 		controllerPanel1.add(join);
 		//adding
 		leftHalf.add(controllerPanel1, BorderLayout.SOUTH);
@@ -205,11 +230,16 @@ public class ClientGUI {
 		rightHalf = new JPanel(new BorderLayout());
 		rightHalf.setPreferredSize(new Dimension(180, 450));
 		//members list title
-		memberListTitle1 = new JLabel(MEMBERS);
-		memberListTitle1.setFont(memberListTitle1.getFont().deriveFont(20.0f));
-		memberListTitle1.setHorizontalAlignment(JLabel.LEFT);
+		memberListTitle = new JLabel(MEMBERS);
+		memberListTitle.setFont(memberListTitle.getFont().deriveFont(20.0f));
+		memberListTitle.setHorizontalAlignment(JLabel.LEFT);
+		//partipcants
+		participantsListModel = new DefaultListModel<>();
+		participantsList = new JList(participantsListModel);
+		participantsScrollPane = new JScrollPane(participantsList);
+		rightHalf.add(participantsScrollPane);
 		//adding
-		rightHalf.add(memberListTitle1, BorderLayout.NORTH);
+		rightHalf.add(memberListTitle, BorderLayout.NORTH);
 		
 		
 		//final adding
@@ -281,6 +311,32 @@ public class ClientGUI {
 		
 	}
 	
+	//regularly poll using this method
+	private void updateServerList()
+	{
+		chatroomListModel.clear();
+		networkManager.fetchChatroomList();
+		//replace with custom cell renderer instead of string
+		for (ArrayList<String> item : ClientNetworkManager.chatroomList)
+		{
+			chatroomListModel.addElement("chatroomID: " + item.get(0) + " ---- members: " + item.get(item.size()-1));
+		}
+		
+	}
+	
+	private void displayParticipants(int selectedID)
+	{
+		participantsListModel.clear();
+		for (int i = 1; i < ClientNetworkManager.chatroomList.get(selectedID).size()-1; i++)
+		{
+			String username = ClientNetworkManager.chatroomList.get(selectedID).get(i);
+			if (username == null)
+				username = "UnknownUser";
+			participantsListModel.addElement(username);
+			participantsListModel2.addElement(username);
+		}
+	}
+	
 	class LoginButtonListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent event)
@@ -299,7 +355,7 @@ public class ClientGUI {
 					submit.setEnabled(false);
 					c1.show(cards,SERVERLIST_CARD);
 					//request server lists
-					networkManager.fetchChatroomList();
+					updateServerList();
 				}
 				else
 				{
@@ -313,6 +369,43 @@ public class ClientGUI {
 				submit.setEnabled(false);
 			}
 						
+		}
+	}
+	
+	class JoinButtonListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			networkManager.setConnectedChatroomID(Integer.parseInt(chatroomList.getSelectedValue().substring(chatroomList.getSelectedValue().indexOf(':')+2,chatroomList.getSelectedValue().indexOf(':')+3)));
+			networkManager.sendMessage(new Message(Integer.toString(networkManager.getConnectedChatroomID()), networkManager.getUsername(), Message.JOIN_CHATROOM_REQUEST));
+			if (networkManager.readMessage().joinChatroomIsApproved())
+			{
+				c1.show(cards, MESSAGING_CARD);
+			}
+		}
+	}
+	class LeaveButtonListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			networkManager.sendMessage(new Message(Integer.toString(networkManager.getConnectedChatroomID()), networkManager.getUsername(), Message.EXIT_CHATROOM_REQUEST));
+			c1.show(cards, SERVERLIST_CARD);
+			if (networkManager.readMessage().exitChatroomIsApproved())
+			{
+				c1.show(cards, SERVERLIST_CARD);
+			}
+			networkManager.setConnectedChatroomID(-1);
+		}
+	}
+	
+	class ServerSelectListener implements ListSelectionListener
+	{
+		public void valueChanged(ListSelectionEvent event)
+		{
+			if (!event.getValueIsAdjusting())
+			{
+				displayParticipants(Integer.parseInt(chatroomList.getSelectedValue().substring(chatroomList.getSelectedValue().indexOf(':')+2,chatroomList.getSelectedValue().indexOf(':')+3)));
+			}
 		}
 	}
 }

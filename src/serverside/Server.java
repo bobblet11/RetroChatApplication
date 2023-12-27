@@ -30,6 +30,17 @@ public class Server {
 		chatrooms.add(new Chatroom(1));
 		chatrooms.add(new Chatroom(2));
 		
+		Client fakeClient1 = new Client();
+		fakeClient1.setUsername("gaylord");
+		Client fakeClient2 = new Client();
+		fakeClient2.setUsername("Harry");
+		Client fakeClient3 = new Client();
+		fakeClient3.setUsername("Ben");
+		
+		chatrooms.get(0).addClient(fakeClient1);
+		chatrooms.get(0).addClient(fakeClient2);
+		chatrooms.get(1).addClient(fakeClient3);
+		
 		receiveClients();
 	}
 	
@@ -44,7 +55,6 @@ public class Server {
 				tempClientHolder = serverSock.accept();
 				System.out.println("client connection from " + tempClientHolder.toString());
 				Client client = new Client(tempClientHolder);	
-				chatrooms.get(0).addClient(client);
 				ServerListenerThread listenerThread = new ServerListenerThread(client);
 				listenerThread.start();
 				

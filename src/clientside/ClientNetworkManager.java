@@ -11,7 +11,7 @@ public class ClientNetworkManager extends Client{
 	
 	private final String IP = "127.0.0.1";
 	private final int PORT = 6000;	
-	ArrayList<ArrayList<String>> chatroomList;
+	static ArrayList<ArrayList<String>> chatroomList;
 	//request chatrooms whenver need to,
 	
 	public ClientNetworkManager()
