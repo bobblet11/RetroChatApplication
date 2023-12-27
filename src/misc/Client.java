@@ -61,7 +61,7 @@ public class Client{
 	}
 	
 	
-	public void sendChatroomList()
+	public boolean sendChatroomList()
 	{
 		ArrayList<ArrayList<String>> out = new ArrayList<ArrayList<String>>();
 		for (Chatroom room : Server.chatrooms)
@@ -72,11 +72,13 @@ public class Client{
 		try
 		{
 			outputStream.writeObject(out);
+			return true;
 		}
 		catch (IOException e)
 		{
 			System.out.println("OutputStream is closed");
 			e.printStackTrace();
+			return false;
 		}
 	}
 	

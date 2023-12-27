@@ -5,28 +5,22 @@ import misc.Message;
 public class ClientListenerThread extends Thread{
 	
 	private ObjectInputStream is;
+	private ClientNetworkManager nm;
 
-	public ClientListenerThread(ObjectInputStream is)
+	public ClientListenerThread(ObjectInputStream is, ClientNetworkManager nm)
 	{
 		System.out.println("starting ClientListenerThread...");
 		this.is = is;
+		this.nm = nm;
 	}
 	
 	public void run()
 	{
-		Message currentMsg;
+
 		while(true)
 		{
-			try
-			{
-				currentMsg = (Message)is.readObject();
-				currentMsg.printMessageStatus();
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-				currentMsg = null;
-			}
-		}	
+			nm.read();
+			ClientGUI.chatroomList.setSelectedIndex(ClientGUI.selectedServer);	
+		}
 	}
 }

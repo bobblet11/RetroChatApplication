@@ -1,4 +1,9 @@
 package serverside;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.Timer;
+
 import misc.Chatroom;
 import misc.Client;
 import misc.Message;
@@ -10,11 +15,24 @@ public class ServerListenerThread extends Thread{
 	private int loginAttempts = 0;
 	private Message currentMsg;
 	private boolean authorised = false;
+	private Timer timer;
 	
 	public ServerListenerThread(Client client)
 	{
 		System.out.println("starting ServerListenerThread...\n- - - -");
 		this.client = client;
+		ActionListener taskPerformer = new ActionListener() {
+		      public void actionPerformed(ActionEvent evt){
+
+		          if (!client.sendChatroomList())
+		          {
+		        	  System.out.println("Lost connection to client");
+		        	  timer.stop();
+		          }
+		      }
+		  };
+		  timer = new Timer(400, taskPerformer);
+		  timer.start();
 	}
 	
 	public void run()
@@ -25,9 +43,20 @@ public class ServerListenerThread extends Thread{
 		//wait for client to choose a chat-room to join
 		
 		//relay messages
+				
 		while(true)
 		{
 			currentMsg = client.readMessage();
+			
+			if (currentMsg == null || !timer.isRunning())
+			{
+				timer.stop();
+				System.out.println("closing thread");
+				return;
+			}
+			
+			System.out.println(Thread.currentThread().isAlive());
+			System.out.println(timer.isRunning());
 			
 			switch ( currentMsg.getCommandType() )
 			{
@@ -78,6 +107,9 @@ public class ServerListenerThread extends Thread{
 					}
 					break;
 				}
+				default:
+					System.out.println("Defaulted");
+					break;
 			}
 		}	
 	}

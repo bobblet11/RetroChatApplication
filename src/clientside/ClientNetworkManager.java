@@ -17,6 +17,7 @@ public class ClientNetworkManager extends Client{
 	public ClientNetworkManager()
 	{
 		connect();
+		startListeningThread();
 	}
 	
 	public boolean attemptLogIn(String username, String password) throws IOException
@@ -39,7 +40,8 @@ public class ClientNetworkManager extends Client{
 		System.out.println("connecting to,\nIP: " + IP + "\n PORT: " + PORT);
 		try
 		{
-			socket = new Socket(IP, PORT);
+			socket = new Socket();
+			socket.connect(new InetSocketAddress(IP, PORT), 1000);
 			outputStream = new ObjectOutputStream(socket.getOutputStream());
 			inputStream = new ObjectInputStream(socket.getInputStream());
 			System.out.println("success!");
@@ -57,7 +59,7 @@ public class ClientNetworkManager extends Client{
 		System.out.println("starting listening thread");
 		try
 		{
-			ClientListenerThread listenerThread = new ClientListenerThread(inputStream);
+			ClientListenerThread listenerThread = new ClientListenerThread(inputStream, this);
 			listenerThread.start();
 			System.out.println("success!");
 		}
@@ -75,8 +77,6 @@ public class ClientNetworkManager extends Client{
 		Message chatroomRequest = new Message("", username, Message.CHATROOM_LIST_REQUEST);
 		sendMessage(chatroomRequest);
 		System.out.println("awaiting chatroom...");
-		chatroomList = readChatRoomList();
-		System.out.println(chatroomList.toString());
 	}
 	
 	private ArrayList<ArrayList<String>> readChatRoomList()
@@ -98,6 +98,73 @@ public class ClientNetworkManager extends Client{
 			return null;
 		}
 	}
+	
+	public void read()
+	{
+		try
+		{
+			Object incoming = (Object) inputStream.readObject();
+			if (incoming instanceof Message)
+			{
+				Message incomingMessage = (Message) incoming;
+				if (incomingMessage.getType() == Message.STANDARD)
+				{
+					ClientGUI.updateTextArea(incomingMessage);
+				}
+				else if (incomingMessage.getCommandType() == Message.LOGIN_REQUEST)
+				{
+					if (incomingMessage.logInIsApproved())
+					{
+						ClientGUI.successfulLogin();
+					}
+					else
+					{
+						ClientGUI.unsuccessfulLogin();
+						username = "";
+					}
+				}
+				else if (incomingMessage.getCommandType() == Message.JOIN_CHATROOM_REQUEST)
+				{
+					if (incomingMessage.joinChatroomIsApproved())
+					{
+						ClientGUI.joinChatroom();
+					}
+					else
+					{
+						setConnectedChatroomID(-1);
+					}
+				}
+				else if (incomingMessage.getCommandType() == Message.EXIT_CHATROOM_REQUEST)
+				{
+					if (incomingMessage.exitChatroomIsApproved())
+					{
+						ClientGUI.exitChatroom();
+						setConnectedChatroomID(-1);
+					}
+				}
+			}
+			else
+			{
+				chatroomList =  (ArrayList<ArrayList<String>>) incoming;
+				ClientGUI.updateServerList();
+				
+			}
+		}
+		catch (IOException e)
+		{
+			System.out.println("InputStream is closed");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		catch (ClassNotFoundException e)
+		{
+			System.out.println("Incompatible object cast");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
+	}
+	
 		
 	//@override
 	public void disconnect()
