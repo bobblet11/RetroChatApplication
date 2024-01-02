@@ -11,7 +11,8 @@ public class ClientNetworkManager extends Client{
 	
 	private final String IP = "127.0.0.1";
 	private final int PORT = 6000;	
-	static ArrayList<ArrayList<String>> chatroomList;
+	static ArrayList<Chatroom> chatroomList;
+	
 	//request chatrooms whenver need to,
 	
 	public ClientNetworkManager()
@@ -104,7 +105,7 @@ public class ClientNetworkManager extends Client{
 	{
 		try
 		{
-			Object incoming = (Object) inputStream.readObject();
+			Object incoming = (Object) inputStream.readUnshared();
 			if (incoming instanceof Message)
 			{
 				Message incomingMessage = (Message) incoming;
@@ -146,9 +147,7 @@ public class ClientNetworkManager extends Client{
 			}
 			else
 			{
-				chatroomList =  (ArrayList<ArrayList<String>>) incoming;
-				ClientGUI.updateServerList();
-				
+				chatroomList =  (ArrayList<Chatroom>) incoming;
 			}
 		}
 		catch (IOException e)

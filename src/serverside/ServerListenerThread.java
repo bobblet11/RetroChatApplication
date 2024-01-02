@@ -25,15 +25,16 @@ public class ServerListenerThread extends Thread{
 		this.client = client;
 		ActionListener taskPerformer = new ActionListener() {
 		      public void actionPerformed(ActionEvent evt){
-
+		    	  System.out.println(Server.chatrooms.get(0).getParticipants());
 		          if (!client.sendChatroomList())
 		          {
 		        	  System.out.println("Lost connection to client");
 		        	  timer.stop();
 		          }
+		        
 		      }
 		  };
-		  timer = new Timer(1000, taskPerformer);
+		  timer = new Timer(600, taskPerformer);
 		  timer.start();
 	}
 	
@@ -69,14 +70,10 @@ public class ServerListenerThread extends Thread{
 					}
 					break;
 				}
-				case Message.CHATROOM_LIST_REQUEST:
-				{
-					client.sendChatroomList();
-					break;
-				}
 				case Message.JOIN_CHATROOM_REQUEST:
 				{
 					int chatIDtoJoin = Integer.parseInt(currentMsg.getMessageBody());
+					System.out.println("client " + client.getUsername() + " has joined " + chatIDtoJoin);
 					Server.chatrooms.get(chatIDtoJoin).addClient(client);
 					client.setConnectedChatroomID(chatIDtoJoin);
 					client.sendMessage(new Message(Message.APPROVED, Message.FROM_SERVER, Message.JOIN_CHATROOM_REQUEST));

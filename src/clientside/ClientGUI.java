@@ -2,7 +2,8 @@ package clientside;
 import javax.swing.*;
 import javax.swing.event.*;
 
-import misc.Message;
+import misc.*;
+import serverside.Server;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -65,6 +66,16 @@ public class ClientGUI {
 	{
 		initialiseGUI();
 		this.networkManager = networkManager;
+		
+		ActionListener taskPerformer = new ActionListener() {
+		      public void actionPerformed(ActionEvent evt){
+		    
+		    	  System.out.println(ClientNetworkManager.chatroomList.get(0).getParticipants().size());
+		    	  updateServerList();
+		      }
+		  };
+		  timer = new Timer(600, taskPerformer);
+		  timer.start();
 	}
 	
 	private void resetGridConstraints(GridBagConstraints c)
@@ -84,6 +95,7 @@ public class ClientGUI {
 	
 	private void initialiseGUI()
 	{
+  	  	System.out.println(SwingUtilities.isEventDispatchThread());
 		//window
 		c = new GridBagConstraints();
 		frame = new JFrame("Retro Chatroom");
@@ -307,25 +319,25 @@ public class ClientGUI {
 	{
 		//SUPER INEFFECTIVE and INEFFICIENT and shit 
 		chatroomListModel.clear();
-		for (ArrayList<String> item : ClientNetworkManager.chatroomList)
+		for (Chatroom room : ClientNetworkManager.chatroomList)
 		{
-			chatroomListModel.addElement("chatroomID: " + item.get(0) + " ---- members: " + item.get(item.size()-1));
+			chatroomListModel.addElement("chatroomID: " + room.getChatroomID() + " ---- members: " + room.getParticipants().size());
 		}
+		
   	  	chatroomList.setSelectedIndex(selectedServer);	
 		
 	}
 	
 	private void displayParticipants(int selectedID)
 	{
+		
 		participantsListModel_SL.clear();
 		participantsListModel_M.clear();
-		for (int i = 1; i < ClientNetworkManager.chatroomList.get(selectedID).size()-1; i++)
+		
+		for (Client client : ClientNetworkManager.chatroomList.get(selectedID).getParticipants())
 		{
-			String username = ClientNetworkManager.chatroomList.get(selectedID).get(i);
-			if (username == null)
-				username = "UnknownUser";
-			participantsListModel_SL.addElement(username);
-			participantsListModel_M.addElement(username);
+			participantsListModel_SL.addElement(client.getUsername());
+			participantsListModel_M.addElement(client.getUsername());
 		}
 	}
 	
@@ -422,12 +434,16 @@ public class ClientGUI {
 			{
 				if (chatroomList.getSelectedIndex()!= -1)
 				{
+					timer.stop();
 					displayParticipants(Character.getNumericValue(chatroomList.getSelectedValue().charAt(12)));
 					selectedServer = chatroomList.getSelectedIndex();
+					timer.start();
 				}
 				else
 				{
+					timer.stop();
 					chatroomList.setSelectedIndex(selectedServer);
+					timer.start();
 				}
 
 			}

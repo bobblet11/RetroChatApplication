@@ -2,10 +2,15 @@ package misc;
 import java.util.*;
 import java.io.*;
 
-public class Chatroom{
+public class Chatroom implements Serializable{
 	
 	private ArrayList<Client> participants;
 	private int chatroomID;
+	
+	public Chatroom()
+	{
+		
+	}
 	
 	public Chatroom(int index)
 	{
@@ -15,10 +20,7 @@ public class Chatroom{
 	
 	public void addClient(Client client)
 	{
-		if (!participants.contains(client))
-		{
-			participants.add(client);
-		}
+		participants.add(client);
 	}
 	
 	public void removeClient(Client client)

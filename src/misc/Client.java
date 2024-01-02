@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import serverside.Server;
 
-public class Client{
+public class Client implements Serializable{
 	
 	public static char DELIMETER = '?';
 	protected ObjectOutputStream outputStream;
@@ -24,7 +24,7 @@ public class Client{
 	
 	public Client()
 	{
-		
+		System.out.println("FUCK");
 	}
 	
 	public Message readMessage()
@@ -51,7 +51,8 @@ public class Client{
 	{
 		try
 		{
-			outputStream.writeObject(message);
+			outputStream.writeUnshared(message);
+			
 		}
 		catch (IOException e)
 		{
@@ -63,15 +64,9 @@ public class Client{
 	
 	public boolean sendChatroomList()
 	{
-		ArrayList<ArrayList<String>> out = new ArrayList<ArrayList<String>>();
-		for (Chatroom room : Server.chatrooms)
-		{
-			out.add(room.getChatroomProperties());
-		}
-		
 		try
 		{
-			outputStream.writeObject(out);
+			outputStream.writeUnshared(Server.chatrooms);
 			return true;
 		}
 		catch (IOException e)
