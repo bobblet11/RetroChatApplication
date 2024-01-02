@@ -56,7 +56,7 @@ public class ClientGUI {
 	private JTextField messageInput;
 	private DefaultListModel<String>  participantsListModel_M;
 	
-	public static int selectedServer = -1;
+	public static int selectedServer = 0;
 	private Timer timer;
 	
 	private ClientNetworkManager networkManager;
@@ -159,6 +159,7 @@ public class ClientGUI {
 		JPanel messagingPageController = new JPanel();
 		//send button
 		JButton sendMessageButton = new JButton(SEND);
+		sendMessageButton.addActionListener(new SendButtonListener());
 		//type input
 		messageInput = new JTextField(20);
 		//adding
@@ -304,6 +305,7 @@ public class ClientGUI {
 	//regularly poll using this method
 	public static void updateServerList()
 	{
+		//SUPER INEFFECTIVE and INEFFICIENT and shit 
 		chatroomListModel.clear();
 		for (ArrayList<String> item : ClientNetworkManager.chatroomList)
 		{
@@ -382,7 +384,7 @@ public class ClientGUI {
 	
 	public static void updateTextArea(Message incomingMessage)
 	{
-		String message = incomingMessage.getSender() + ": " + incomingMessage.getMessageBody() + "/n";
+		String message = incomingMessage.getSender() + " : " + incomingMessage.getMessageBody() + "\n";
 		leftTextPanel.append(message);
 	}	
 	
@@ -399,6 +401,16 @@ public class ClientGUI {
 		public void actionPerformed(ActionEvent event)
 		{
 			networkManager.sendMessage(new Message(Integer.toString(networkManager.getConnectedChatroomID()), networkManager.getUsername(), Message.EXIT_CHATROOM_REQUEST));
+			leftTextPanel.setText("");
+		}
+	}
+	
+	class SendButtonListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			networkManager.sendMessage(new Message(messageInput.getText(), networkManager.getUsername()));
+			messageInput.setText("");
 		}
 	}
 	
@@ -410,7 +422,6 @@ public class ClientGUI {
 			{
 				if (chatroomList.getSelectedIndex()!= -1)
 				{
-					System.out.println("HERE");
 					displayParticipants(Character.getNumericValue(chatroomList.getSelectedValue().charAt(12)));
 					selectedServer = chatroomList.getSelectedIndex();
 				}

@@ -20,7 +20,6 @@ public class ClientListenerThread extends Thread{
 		while(true)
 		{
 			nm.read();
-			ClientGUI.chatroomList.setSelectedIndex(ClientGUI.selectedServer);	
 		}
 	}
 }

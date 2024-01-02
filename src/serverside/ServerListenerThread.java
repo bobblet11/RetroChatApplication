@@ -1,5 +1,6 @@
 package serverside;
 import java.awt.event.ActionEvent;
+import java.io.*;
 import java.awt.event.ActionListener;
 
 import javax.swing.Timer;
@@ -7,6 +8,7 @@ import javax.swing.Timer;
 import misc.Chatroom;
 import misc.Client;
 import misc.Message;
+
 
 public class ServerListenerThread extends Thread{
 	
@@ -31,7 +33,7 @@ public class ServerListenerThread extends Thread{
 		          }
 		      }
 		  };
-		  timer = new Timer(400, taskPerformer);
+		  timer = new Timer(1000, taskPerformer);
 		  timer.start();
 	}
 	
@@ -55,17 +57,15 @@ public class ServerListenerThread extends Thread{
 				return;
 			}
 			
-			System.out.println(Thread.currentThread().isAlive());
-			System.out.println(timer.isRunning());
-			
 			switch ( currentMsg.getCommandType() )
 			{
 				case Message.NULL_COMMAND_TYPE: //standard message
 				{
+					System.out.println(client.getConnectedChatroomID());
+					System.out.println(Server.chatrooms.get(client.getConnectedChatroomID()).getParticipants());
 					for (Client c : Server.chatrooms.get(client.getConnectedChatroomID()).getParticipants())
 					{
-						if (!c.equals(client))
-							c.sendMessage(currentMsg);
+						c.sendMessage(currentMsg);
 					}
 					break;
 				}
@@ -92,6 +92,7 @@ public class ServerListenerThread extends Thread{
 				}
 				case Message.LOGIN_REQUEST:
 				{
+					
 					if (!authorised)
 					{
 						if (loginAttempts >3)
@@ -102,7 +103,16 @@ public class ServerListenerThread extends Thread{
 						else
 						{
 							loginAttempts++;
-							authorised = checkLogin();
+							if (checkLogin())
+							{
+								client.sendMessage(new Message(Message.APPROVED, Message.FROM_SERVER, Message.LOGIN_REQUEST));
+								authorised = true;
+							}
+							else
+							{
+								client.sendMessage(new Message(Message.REJECTED, Message.FROM_SERVER, Message.LOGIN_REQUEST));
+								authorised = false;
+							}
 						}
 					}
 					break;
@@ -120,18 +130,36 @@ public class ServerListenerThread extends Thread{
 		String password = currentMsg.getMessageBody().substring(currentMsg.getMessageBody().indexOf('?')+1);
 		
 		//USE DATA BASE HERE, COMPARE LOGIN ATTEMPT WITH ACCOUNTS IN DATABASE
-	
-		if (username.equals("banned")) //unsuccessful login
+		try
 		{
-			client.sendMessage(new Message(Message.REJECTED, Message.FROM_SERVER, Message.LOGIN_REQUEST));
+			BufferedReader br = new BufferedReader(new FileReader(Server.accountsFile));
+			String st = br.readLine();
+			//assuming user names are in alphabetical order
+			while ((st != null && (int)st.charAt(0) <= (int)username.charAt(0)))
+			{
+				System.out.println(st.substring(0,st.indexOf("|")));
+				if (st.substring(0,st.indexOf("|")).equals(username) && st.substring(st.indexOf("|")+1).equals(password))
+				{
+					client.setUsername(username);
+					return true;
+				}
+				st = br.readLine();
+			}
+			br.close();
+			return false;
+			
 		}
-		else//successful login
+		catch (FileNotFoundException e)
 		{
-			client.sendMessage(new Message(Message.APPROVED, Message.FROM_SERVER, Message.LOGIN_REQUEST));
-			client.setUsername(username);
-			return true;
+			System.out.println("no accounts to search");
+			return false;
 		}
-		return false;
+		catch (IOException e)
+		{
+			System.out.println("IOException in accounts file");
+			return false;
+		}
+		
 	}
 	
 }

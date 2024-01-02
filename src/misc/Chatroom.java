@@ -49,11 +49,6 @@ public class Chatroom{
 		
 	}
 	
-	public void streamParticipants()
-	{
-		
-	}
-	
 	public int getChatroomID()
 	{
 		return chatroomID;

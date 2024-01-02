@@ -70,34 +70,35 @@ public class ClientNetworkManager extends Client{
 			System.exit(0);
 		}
 	}
-		
-	public void fetchChatroomList()
-	{
-		System.out.println("requesting chatroom list...");
-		Message chatroomRequest = new Message("", username, Message.CHATROOM_LIST_REQUEST);
-		sendMessage(chatroomRequest);
-		System.out.println("awaiting chatroom...");
-	}
+
+// POLLING DEPRECATED 
+//	public void fetchChatroomList()
+//	{
+//		System.out.println("requesting chatroom list...");
+//		Message chatroomRequest = new Message(chatroomList.toString(), username, Message.CHATROOM_LIST_REQUEST);
+//		sendMessage(chatroomRequest);
+//		System.out.println("awaiting chatroom...");
+//	}
 	
-	private ArrayList<ArrayList<String>> readChatRoomList()
-	{
-		try
-		{
-			return (ArrayList<ArrayList<String>>) inputStream.readObject();
-		}
-		catch (IOException e)
-		{
-			System.out.println("InputStream is closed");
-			e.printStackTrace();
-			return null;
-		}
-		catch (ClassNotFoundException e)
-		{
-			System.out.println("Incompatible object cast");
-			e.printStackTrace();
-			return null;
-		}
-	}
+//	private ArrayList<ArrayList<String>> readChatRoomList()
+//	{
+//		try
+//		{
+//			return (ArrayList<ArrayList<String>>) inputStream.readObject();
+//		}
+//		catch (IOException e)
+//		{
+//			System.out.println("InputStream is closed");
+//			e.printStackTrace();
+//			return null;
+//		}
+//		catch (ClassNotFoundException e)
+//		{
+//			System.out.println("Incompatible object cast");
+//			e.printStackTrace();
+//			return null;
+//		}
+//	}
 	
 	public void read()
 	{

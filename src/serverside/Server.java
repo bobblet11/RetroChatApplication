@@ -17,6 +17,8 @@ public class Server {
 	//remove clients when chatrooms implementation is done
 	public static ArrayList<Chatroom> chatrooms;
 	public static ArrayList<Client> clients;
+	public static File accountsFile = new File("src/serverside/Accounts.txt");
+	private ArrayList<ServerListenerThread> threads = new  ArrayList<ServerListenerThread>();
 	
 	public Server() throws IOException
 	{
@@ -29,18 +31,7 @@ public class Server {
 		chatrooms.add(new Chatroom(0));
 		chatrooms.add(new Chatroom(1));
 		chatrooms.add(new Chatroom(2));
-		
-		Client fakeClient1 = new Client();
-		fakeClient1.setUsername("gaylord");
-		Client fakeClient2 = new Client();
-		fakeClient2.setUsername("Harry");
-		Client fakeClient3 = new Client();
-		fakeClient3.setUsername("Ben");
-		
-		chatrooms.get(0).addClient(fakeClient1);
-		chatrooms.get(0).addClient(fakeClient2);
-		chatrooms.get(1).addClient(fakeClient3);
-		
+			
 		receiveClients();
 	}
 	
@@ -52,10 +43,16 @@ public class Server {
 		{
 			try
 			{
+				System.out.println(threads);
+				for (ServerListenerThread thread: threads)
+				{
+					System.out.println("Thread " + thread.threadId() + " alive state is " + thread.isAlive());
+				}
 				tempClientHolder = serverSock.accept();
 				System.out.println("client connection from " + tempClientHolder.toString());
 				Client client = new Client(tempClientHolder);	
 				ServerListenerThread listenerThread = new ServerListenerThread(client);
+				threads.add(listenerThread);
 				listenerThread.start();
 				
 			}
