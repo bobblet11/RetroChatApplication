@@ -18,15 +18,18 @@ public class ServerListenerThread extends Thread{
 	private Message currentMsg;
 	private boolean authorised = false;
 	private Timer timer;
+	Server server;
 	
-	public ServerListenerThread(Client client)
+	public ServerListenerThread(Client client, Server server)
 	{
 		System.out.println("starting ServerListenerThread...\n- - - -");
 		this.client = client;
+		this.server = server;
 		ActionListener taskPerformer = new ActionListener() {
 		      public void actionPerformed(ActionEvent evt){
-		    	  System.out.println(Server.chatrooms.get(0).getParticipants());
-		          if (!client.sendChatroomList())
+		    	
+		    	  server.getChatroom().get(0).printParticipants();
+		          if (!client.send(false, server.getChatroom()))
 		          {
 		        	  System.out.println("Lost connection to client");
 		        	  timer.stop();
@@ -63,10 +66,10 @@ public class ServerListenerThread extends Thread{
 				case Message.NULL_COMMAND_TYPE: //standard message
 				{
 					System.out.println(client.getConnectedChatroomID());
-					System.out.println(Server.chatrooms.get(client.getConnectedChatroomID()).getParticipants());
-					for (Client c : Server.chatrooms.get(client.getConnectedChatroomID()).getParticipants())
+					System.out.println(server.getChatroom().get(client.getConnectedChatroomID()).getParticipants());
+					for (Client c : server.getChatroom().get(client.getConnectedChatroomID()).getParticipants())
 					{
-						c.sendMessage(currentMsg);
+						c.send(true, currentMsg);
 					}
 					break;
 				}
@@ -74,17 +77,17 @@ public class ServerListenerThread extends Thread{
 				{
 					int chatIDtoJoin = Integer.parseInt(currentMsg.getMessageBody());
 					System.out.println("client " + client.getUsername() + " has joined " + chatIDtoJoin);
-					Server.chatrooms.get(chatIDtoJoin).addClient(client);
+					server.getChatroom().get(chatIDtoJoin).addClient(client);
 					client.setConnectedChatroomID(chatIDtoJoin);
-					client.sendMessage(new Message(Message.APPROVED, Message.FROM_SERVER, Message.JOIN_CHATROOM_REQUEST));
+					client.send(true, new Message(Message.APPROVED, Message.FROM_SERVER, Message.JOIN_CHATROOM_REQUEST));
 					break;
 				}
 				case Message.EXIT_CHATROOM_REQUEST:
 				{
 					int chatIDtoJoin = Integer.parseInt(currentMsg.getMessageBody());
-					Server.chatrooms.get(chatIDtoJoin).removeClient(client);
+					server.getChatroom().get(chatIDtoJoin).removeClient(client);
 					client.setConnectedChatroomID(-1);
-					client.sendMessage(new Message(Message.APPROVED, Message.FROM_SERVER, Message.EXIT_CHATROOM_REQUEST));
+					client.send(true, new Message(Message.APPROVED, Message.FROM_SERVER, Message.EXIT_CHATROOM_REQUEST));
 					break;
 				}
 				case Message.LOGIN_REQUEST:
@@ -102,12 +105,12 @@ public class ServerListenerThread extends Thread{
 							loginAttempts++;
 							if (checkLogin())
 							{
-								client.sendMessage(new Message(Message.APPROVED, Message.FROM_SERVER, Message.LOGIN_REQUEST));
+								client.send(true, new Message(Message.APPROVED, Message.FROM_SERVER, Message.LOGIN_REQUEST));
 								authorised = true;
 							}
 							else
 							{
-								client.sendMessage(new Message(Message.REJECTED, Message.FROM_SERVER, Message.LOGIN_REQUEST));
+								client.send(true, new Message(Message.REJECTED, Message.FROM_SERVER, Message.LOGIN_REQUEST));
 								authorised = false;
 							}
 						}

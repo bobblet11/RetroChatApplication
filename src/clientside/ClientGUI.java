@@ -70,7 +70,8 @@ public class ClientGUI {
 		ActionListener taskPerformer = new ActionListener() {
 		      public void actionPerformed(ActionEvent evt){
 		    
-		    	  System.out.println(ClientNetworkManager.chatroomList.get(0).getParticipants().size());
+		    	  //System.out.println(ClientNetworkManager.chatroomList.toString());
+		    	  System.out.println(ClientNetworkManager.chatroomList.get(0).getParticipants().toString());
 		    	  updateServerList();
 		      }
 		  };

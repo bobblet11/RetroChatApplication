@@ -15,7 +15,7 @@ public class Server {
 	private final int PORT = 6000;
 	private ServerSocket serverSock = null;
 	//remove clients when chatrooms implementation is done
-	public static ArrayList<Chatroom> chatrooms;
+	private ArrayList<Chatroom> chatrooms;
 	public static ArrayList<Client> clients;
 	public static File accountsFile = new File("src/serverside/Accounts.txt");
 	private ArrayList<ServerListenerThread> threads = new  ArrayList<ServerListenerThread>();
@@ -51,7 +51,7 @@ public class Server {
 				tempClientHolder = serverSock.accept();
 				System.out.println("client connection from " + tempClientHolder.toString());
 				Client client = new Client(tempClientHolder);	
-				ServerListenerThread listenerThread = new ServerListenerThread(client);
+				ServerListenerThread listenerThread = new ServerListenerThread(client, this);
 				threads.add(listenerThread);
 				listenerThread.start();
 				
@@ -75,4 +75,8 @@ public class Server {
 		System.out.println("success!");
 	}
 	
+	public ArrayList<Chatroom> getChatroom()
+	{
+		return this.chatrooms;
+	}
 }

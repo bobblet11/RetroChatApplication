@@ -8,9 +8,9 @@ import serverside.Server;
 public class Client implements Serializable{
 	
 	public static char DELIMETER = '?';
-	protected ObjectOutputStream outputStream;
-	protected ObjectInputStream inputStream;
-	protected Socket socket;
+	transient protected ObjectOutputStream outputStream;
+	transient protected ObjectInputStream inputStream;
+	transient protected Socket socket;
 	protected String username;
 	protected String password;
 	protected int connectedChatroomID;
@@ -47,6 +47,29 @@ public class Client implements Serializable{
 		}
 	}
 	
+	public synchronized boolean send(boolean isMessage, Object data)
+	{
+		try
+		{
+			outputStream.reset();
+			
+			if (isMessage)
+			{
+				sendMessage((Message) data);
+				return true;
+			}
+			else
+			{
+				return sendChatroomList((ArrayList<Chatroom>) data);
+			}
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
+	}
+	
+	
 	public void sendMessage(Message message)
 	{
 		try
@@ -62,11 +85,11 @@ public class Client implements Serializable{
 	}
 	
 	
-	public boolean sendChatroomList()
+	public boolean sendChatroomList(ArrayList<Chatroom> chatrooms)
 	{
 		try
 		{
-			outputStream.writeUnshared(Server.chatrooms);
+			outputStream.writeUnshared(chatrooms);
 			return true;
 		}
 		catch (IOException e)
