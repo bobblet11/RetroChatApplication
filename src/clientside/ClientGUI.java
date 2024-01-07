@@ -1,5 +1,6 @@
 package clientside;
 import javax.swing.*;
+import javax.swing.text.*;
 import javax.swing.event.*;
 
 import misc.*;
@@ -18,7 +19,7 @@ public class ClientGUI {
 	}
 	
 	//window
-	private JFrame frame;
+	private static JFrame frame;
 	private static JPanel cards;
 	private int windowWidth = 500, windowHeight = 500;
 	private GridBagConstraints c;
@@ -53,7 +54,7 @@ public class ClientGUI {
 	private final String MESSAGING_PAGE_TITLE = "TITLE";
 	private final String SEND = "Send";
 	private final String LEAVE = "Leave";
-	private static JTextArea leftTextPanel;
+	private static JTextPane leftTextPanel;
 	private JTextField messageInput;
 	private DefaultListModel<String>  participantsListModel_M;
 	
@@ -114,6 +115,11 @@ public class ClientGUI {
 		
 		c1 = (CardLayout)(cards.getLayout());
 		c1.show(cards,LOGIN_CARD);
+		
+		
+		Image icon = Toolkit.getDefaultToolkit().getImage("src/icon.png");    
+		frame.setIconImage(icon);    
+		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
 	}
@@ -144,7 +150,8 @@ public class ClientGUI {
 		
 		//messaging
 		//texting area
-		leftTextPanel = new JTextArea(100,10);
+		leftTextPanel = new JTextPane();
+		leftTextPanel.setPreferredSize(new Dimension(100, 10));
 		leftTextPanel.setEditable(false);
 		JScrollPane scrollMessages = new JScrollPane(leftTextPanel);
 		scrollMessages.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -315,6 +322,12 @@ public class ClientGUI {
 		
 	}
 	
+	public static void serverUnavailable()
+	{
+		JOptionPane.showMessageDialog(frame, "Server is currently down");
+	}
+	
+	
 	//regularly poll using this method
 	public static void updateServerList()
 	{
@@ -395,10 +408,20 @@ public class ClientGUI {
 		}
 	}
 	
-	public static void updateTextArea(Message incomingMessage)
+	public static void updateTextArea(Message incomingMessage, Color colour)
 	{
 		String message = incomingMessage.getSender() + " : " + incomingMessage.getMessageBody() + "\n";
-		leftTextPanel.append(message);
+		StyledDocument doc = leftTextPanel.getStyledDocument();
+
+        Style style = leftTextPanel.addStyle("Color Style", null);
+        StyleConstants.setForeground(style, colour);
+        
+        try {
+            doc.insertString(doc.getLength(), message, style);
+        } 
+        catch (BadLocationException e) {
+            e.printStackTrace();
+        }  
 	}	
 	
 	class JoinButtonListener implements ActionListener

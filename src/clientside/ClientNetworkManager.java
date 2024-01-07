@@ -1,5 +1,6 @@
 package clientside;
 import java.net.*;
+import java.awt.Color;
 import java.io.*;
 import java.util.*;
 import misc.Message;
@@ -49,6 +50,7 @@ public class ClientNetworkManager extends Client{
 		}
 		catch(IOException e)
 		{
+			ClientGUI.serverUnavailable();
 			System.out.println("failed to connect to server!");
 			e.printStackTrace();
 			System.exit(0);
@@ -111,7 +113,15 @@ public class ClientNetworkManager extends Client{
 				Message incomingMessage = (Message) incoming;
 				if (incomingMessage.getType() == Message.STANDARD)
 				{
-					ClientGUI.updateTextArea(incomingMessage);
+					System.out.println(incomingMessage.getSender());
+					if (incomingMessage.getSender().equals(Message.FROM_SERVER))
+					{
+						ClientGUI.updateTextArea(incomingMessage, Color.LIGHT_GRAY);
+					}
+					else
+					{
+						ClientGUI.updateTextArea(incomingMessage, Color.BLACK);	
+					}
 				}
 				else if (incomingMessage.getCommandType() == Message.LOGIN_REQUEST)
 				{

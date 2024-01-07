@@ -41,7 +41,7 @@ public class Client implements Serializable{
 		}
 		catch (ClassNotFoundException e)
 		{
-			System.out.println("Incompatible object cast");
+			System.out.println("Incompatible object cast");	
 			e.printStackTrace();
 			return null;
 		}

@@ -67,10 +67,7 @@ public class ServerListenerThread extends Thread{
 				{
 					System.out.println(client.getConnectedChatroomID());
 					System.out.println(server.getChatroom().get(client.getConnectedChatroomID()).getParticipants());
-					for (Client c : server.getChatroom().get(client.getConnectedChatroomID()).getParticipants())
-					{
-						c.send(true, currentMsg);
-					}
+					sendToEveryone(currentMsg);
 					break;
 				}
 				case Message.JOIN_CHATROOM_REQUEST:
@@ -80,14 +77,16 @@ public class ServerListenerThread extends Thread{
 					server.getChatroom().get(chatIDtoJoin).addClient(client);
 					client.setConnectedChatroomID(chatIDtoJoin);
 					client.send(true, new Message(Message.APPROVED, Message.FROM_SERVER, Message.JOIN_CHATROOM_REQUEST));
+					sendToEveryone(new Message(client.getUsername() + " has joined.", Message.FROM_SERVER));
 					break;
 				}
 				case Message.EXIT_CHATROOM_REQUEST:
 				{
 					int chatIDtoJoin = Integer.parseInt(currentMsg.getMessageBody());
 					server.getChatroom().get(chatIDtoJoin).removeClient(client);
-					client.setConnectedChatroomID(-1);
 					client.send(true, new Message(Message.APPROVED, Message.FROM_SERVER, Message.EXIT_CHATROOM_REQUEST));
+					sendToEveryone(new Message(client.getUsername() + " has left.", Message.FROM_SERVER));
+					client.setConnectedChatroomID(-1);
 					break;
 				}
 				case Message.LOGIN_REQUEST:
@@ -123,6 +122,15 @@ public class ServerListenerThread extends Thread{
 			}
 		}	
 	}
+	
+	private void sendToEveryone(Message message)
+	{
+		for (Client c : server.getChatroom().get(client.getConnectedChatroomID()).getParticipants())
+		{
+			c.send(true, message);
+		}
+	}
+	
 	
 	private boolean checkLogin()
 	{
