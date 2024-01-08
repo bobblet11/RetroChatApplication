@@ -60,6 +60,7 @@ public class ClientGUI {
 	private final String MESSAGING_PAGE_TITLE = "TITLE";
 	private final String SEND = "Send";
 	private final String LEAVE = "Leave";
+	private final int textPanelCharWidth = 100;
 	
 	static JTextPane leftTextPanel;
 	
@@ -351,16 +352,20 @@ public class ClientGUI {
 	}
 	
 	static void updateTextArea(Message incomingMessage, Color colour) {
-		String message = incomingMessage.getFormatedTimestamp() + 
-				         incomingMessage.getSender() + " : " + 
-				         incomingMessage.getMessageBody() + "\n";
+		String message = incomingMessage.getSender() + " : " + 
+				         incomingMessage.getMessageBody();
+		
 		StyledDocument doc = leftTextPanel.getStyledDocument();
 
-        Style style = leftTextPanel.addStyle("Color Style", null);
-        StyleConstants.setForeground(style, colour);
+        Style mainStyle = leftTextPanel.addStyle("Main style", null);
+        StyleConstants.setForeground(mainStyle, colour);
+        
+        Style timeStyle = leftTextPanel.addStyle("Timestamp Style", null);
+        StyleConstants.setForeground(timeStyle, Color.LIGHT_GRAY);
         
         try {
-            doc.insertString(doc.getLength(), message, style);
+            doc.insertString(doc.getLength(), message, mainStyle);
+            doc.insertString(doc.getLength(), "  " + incomingMessage.getSimpleFormatedTimestamp() + "\n", timeStyle);
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -405,9 +410,12 @@ public class ClientGUI {
 	
 	class SendButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent event) {
-			Message messageData = new Message(messageInput.getText(), networkManager.getUsername());
-			networkManager.sendData(messageData);
-			messageInput.setText("");
+			String input = messageInput.getText();
+			if (!input.isBlank()){
+				Message messageData = new Message(input, networkManager.getUsername());
+				networkManager.sendData(messageData);
+				messageInput.setText("");
+			}
 		}
 	}
 	

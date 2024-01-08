@@ -6,6 +6,7 @@ import java.util.*;
 import shared.*;
 import shared.Message.command;
 import shared.Message.type;
+import javax.swing.*;
 
 public class ClientNetworkManager extends Client{
 	
@@ -57,26 +58,41 @@ public class ClientNetworkManager extends Client{
 			Message incomingMessage = (Message) incoming;
 			
 			if (incomingMessage.getType() == type.STANDARD) {
-				Color colourOfText = incomingMessage.getSender().equals(Message.SERVER) ? Color.LIGHT_GRAY : Color.BLACK;
-				ClientGUI.updateTextArea(incomingMessage, colourOfText);	
+				
+				SwingUtilities.invokeLater(new Runnable() {
+				public void run(){
+					Color colourOfText = incomingMessage.getSender().equals(Message.SERVER) ? Color.GRAY : Color.BLACK;
+					ClientGUI.updateTextArea(incomingMessage, colourOfText);	
+				}});
+				
 				return;
 			}
 			
 			if (incomingMessage.getCommandType() == command.LOGIN_REQUEST) {
-				if (incomingMessage.logInIsApproved()) {
-					ClientGUI.successfulLogin();
-				}
-				else {
-					ClientGUI.unsuccessfulLogin();
-					setUsername("");
-				}
+				
+				SwingUtilities.invokeLater(new Runnable() {
+				public void run(){
+					if (incomingMessage.logInIsApproved()) {
+						ClientGUI.successfulLogin();
+					}
+					else {
+						ClientGUI.unsuccessfulLogin();
+						setUsername("");
+					}
+				}});
+				
 				return;
 			}
 			
 			if (incomingMessage.getCommandType() == command.JOIN_CHATROOM_REQUEST)
 			{
 				if (incomingMessage.joinChatroomIsApproved()){
-					ClientGUI.joinChatroom();
+					
+					SwingUtilities.invokeLater(new Runnable() {
+					public void run(){
+						ClientGUI.joinChatroom();
+					}});
+					
 				}
 				else {
 					setConnectedChatroomID(-1);
@@ -84,16 +100,23 @@ public class ClientNetworkManager extends Client{
 				return;
 			}
 			
-			if (incomingMessage.getCommandType() == command.EXIT_CHATROOM_REQUEST && incomingMessage.exitChatroomIsApproved())
-			{
-				ClientGUI.exitChatroom();
+			if (incomingMessage.getCommandType() == command.EXIT_CHATROOM_REQUEST && incomingMessage.exitChatroomIsApproved()){
+				
+				SwingUtilities.invokeLater(new Runnable() {
+				public void run(){
+					ClientGUI.exitChatroom();
+				}});
 				setConnectedChatroomID(-1);
+				
 				return;
 			}
 		}
 		else {
 			chatroomList =  (ArrayList<Chatroom>) incoming;
-			ClientGUI.updateServerList();
+			SwingUtilities.invokeLater(new Runnable() {
+			public void run(){
+				ClientGUI.updateServerList();
+			}});
 		}
 	}
 	

@@ -74,9 +74,15 @@ public class Message implements Serializable {
 	
 	public String getFormatedTimestamp()
 	{
-		return String.format("[ %d - %d - %d###%d:%d:%d ]", 
-		timeStamp[YEAR], timeStamp[MONTH], timeStamp[DAY], 
-		timeStamp[HOUR], timeStamp[MINUTE], timeStamp[SECOND]);
+		return String.format("[%2d-%2d-%2d|%2d:%2d:%2d]", 
+		timeStamp[DAY], timeStamp[MONTH], timeStamp[YEAR], 
+		timeStamp[HOUR], timeStamp[MINUTE], timeStamp[SECOND]).replace(' ', '0');
+	}
+	
+	public String getSimpleFormatedTimestamp()
+	{
+		return String.format("[%2d:%2d]", 
+		timeStamp[HOUR], timeStamp[MINUTE]).replace(' ', '0');
 	}
 	
 	public int getHour()
