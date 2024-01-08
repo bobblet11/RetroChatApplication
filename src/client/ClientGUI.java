@@ -1,65 +1,73 @@
-package clientside;
+package client;
 import javax.swing.*;
 import javax.swing.text.*;
+
+import server.Server;
+
 import javax.swing.event.*;
 
-import misc.*;
-import serverside.Server;
+import shared.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 
 public class ClientGUI {
+
+	private final String windowIcon = "resources/icon.png";
 	
-	public static void main(String args[])
-	{
-		ClientNetworkManager networkManager = new ClientNetworkManager();
-		ClientGUI gui = new ClientGUI(networkManager);
+	enum Cards {
+		LOGIN_CARD,
+		SERVERLIST_CARD,
+		MESSAGING_CARD
 	}
 	
 	//window
-	private static JFrame frame;
-	private static JPanel cards;
+	static JFrame frame;
+	static JPanel cards;
+	
 	private int windowWidth = 500, windowHeight = 500;
 	private GridBagConstraints c;
-	private static CardLayout c1;
+	static CardLayout cardLayout;
 	
 	//sign in
-	private final static String LOGIN_CARD = "LOGIN_CARD";
 	private final String LOGIN_TITLE = "Sign in";
 	private final String USERNAME = "Username";
 	private final String PASSWORD = "Password";
 	private final String SUBMIT = "Submit";
-	private static final String AUTHORISED = "Connection Authorised";
-	private static final String UNAUTHORISED = "Account not found";
-	private static final String BLOCKED_LOGIN = "You have been blocked";
+	
+	static final String AUTHORISED = "Connection Authorised";
+	static final String UNAUTHORISED = "Account not found";
+	static final String BLOCKED_LOGIN = "You have been blocked";
+	
 	private JTextField usernameField;
-	private static JPasswordField passwordField;
-	private static JLabel authorisationResult;
-	private static JButton submit;
+	static JPasswordField passwordField;
+	static JLabel authorisationResult;
+	static JButton submit;
 	
 	//serverListPage
-	private final static String SERVERLIST_CARD = "SERVERLIST_CARD";
 	private final String SERVERPAGE_TITLE = "Chatrooms";
 	private final String SERVERLIST_TITLE = "Servers";
 	private final String JOIN = "Join";
 	private final String MEMBERS = "Members";
-	public static JList<String> chatroomList;
-	static DefaultListModel<String>  chatroomListModel;
-	private DefaultListModel<String>  participantsListModel_SL;
+	
+	static JList<String> chatroomList;
+	static DefaultListModel<String>  chatroomListModel =  new DefaultListModel<>();
+	
+	private DefaultListModel<String>  participantsListModel_SL =  new DefaultListModel<>();
 	
 	//messagingPage
-	private final static String MESSAGING_CARD = "MESSAGING_CARD";
 	private final String MESSAGING_PAGE_TITLE = "TITLE";
 	private final String SEND = "Send";
 	private final String LEAVE = "Leave";
-	private static JTextPane leftTextPanel;
+	
+	static JTextPane leftTextPanel;
+	
 	private JTextField messageInput;
 	private DefaultListModel<String>  participantsListModel_M;
 	
+	
 	public static int selectedServer = 0;
-	private Timer timer;
 	
 	private ClientNetworkManager networkManager;
 	
@@ -67,17 +75,6 @@ public class ClientGUI {
 	{
 		initialiseGUI();
 		this.networkManager = networkManager;
-		
-		ActionListener taskPerformer = new ActionListener() {
-		      public void actionPerformed(ActionEvent evt){
-		    
-		    	  //System.out.println(ClientNetworkManager.chatroomList.toString());
-		    	  System.out.println(ClientNetworkManager.chatroomList.get(0).getParticipants().toString());
-		    	  updateServerList();
-		      }
-		  };
-		  timer = new Timer(600, taskPerformer);
-		  timer.start();
 	}
 	
 	private void resetGridConstraints(GridBagConstraints c)
@@ -113,11 +110,11 @@ public class ClientGUI {
 		initialiseMessagingPage();
 		
 		
-		c1 = (CardLayout)(cards.getLayout());
-		c1.show(cards,LOGIN_CARD);
+		cardLayout = (CardLayout)(cards.getLayout());
+		cardLayout.show(cards,Cards.LOGIN_CARD.toString());
 		
 		
-		Image icon = Toolkit.getDefaultToolkit().getImage("src/icon.png");    
+		Image icon = Toolkit.getDefaultToolkit().getImage(windowIcon);    
 		frame.setIconImage(icon);    
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -193,7 +190,7 @@ public class ClientGUI {
 		messagePage.add(rightParticipantsPanel, BorderLayout.EAST);
 		messagePage.add(messagingPageController,BorderLayout.SOUTH);
 		//insert into card layout
-		cards.add(messagePage,MESSAGING_CARD );
+		cards.add(messagePage,Cards.MESSAGING_CARD.toString() );
 		
 	}
 	
@@ -221,7 +218,6 @@ public class ClientGUI {
 		serverListTitle.setFont(serverListTitle.getFont().deriveFont(20.0f));
 		serverListTitle.setHorizontalAlignment(JLabel.LEFT);
 		//list
-		chatroomListModel = new DefaultListModel<>();
 		chatroomList = new JList(chatroomListModel);
 		JScrollPane chatroomScrollPane = new JScrollPane(chatroomList);
 		chatroomList.addListSelectionListener(new ServerSelectListener());
@@ -246,7 +242,6 @@ public class ClientGUI {
 		memberListTitle.setFont(memberListTitle.getFont().deriveFont(20.0f));
 		memberListTitle.setHorizontalAlignment(JLabel.LEFT);
 		//Jlist
-		participantsListModel_SL = new DefaultListModel<>();
 		JList<String> participantsList = new JList(participantsListModel_SL);
 		JScrollPane participantsScrollPane = new JScrollPane(participantsList);
 		//adding
@@ -259,7 +254,7 @@ public class ClientGUI {
 		serverListPage.add(leftPanelForChatrooms, BorderLayout.WEST);
 		serverListPage.add(rightPanelForParticipants,BorderLayout.EAST);
 		//insert into card layout
-		cards.add(serverListPage, SERVERLIST_CARD);
+		cards.add(serverListPage, Cards.SERVERLIST_CARD.toString());
 	}
 	
 	private void initialiseLogIn()
@@ -318,7 +313,7 @@ public class ClientGUI {
 		
 		//final adding
 		//insert into card layout
-		cards.add(logInPanel, LOGIN_CARD);
+		cards.add(logInPanel, Cards.LOGIN_CARD.toString());
 		
 	}
 	
@@ -327,8 +322,6 @@ public class ClientGUI {
 		JOptionPane.showMessageDialog(frame, "Server is currently down");
 	}
 	
-	
-	//regularly poll using this method
 	public static void updateServerList()
 	{
 		//SUPER INEFFECTIVE and INEFFICIENT and shit 
@@ -360,7 +353,7 @@ public class ClientGUI {
 		authorisationResult.setText(AUTHORISED);
 		submit.setEnabled(false);
 		//go to next page
-		c1.show(cards,SERVERLIST_CARD);
+		cardLayout.show(cards,Cards.SERVERLIST_CARD.toString());
 	}
 	
 	public static void unsuccessfulLogin()
@@ -377,12 +370,12 @@ public class ClientGUI {
 	
 	public static void joinChatroom()
 	{
-		c1.show(cards, MESSAGING_CARD);
+		cardLayout.show(cards, Cards.MESSAGING_CARD.toString());
 	}
 	
 	public static void exitChatroom()
 	{
-		c1.show(cards, SERVERLIST_CARD);
+		cardLayout.show(cards, Cards.SERVERLIST_CARD.toString());
 	}
 	
 	
@@ -458,19 +451,16 @@ public class ClientGUI {
 			{
 				if (chatroomList.getSelectedIndex()!= -1)
 				{
-					timer.stop();
 					displayParticipants(Character.getNumericValue(chatroomList.getSelectedValue().charAt(12)));
 					selectedServer = chatroomList.getSelectedIndex();
-					timer.start();
 				}
 				else
 				{
-					timer.stop();
 					chatroomList.setSelectedIndex(selectedServer);
-					timer.start();
 				}
 
 			}
 		}
 	}
+	
 }

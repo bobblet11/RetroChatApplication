@@ -1,20 +1,15 @@
-package clientside;
+package client;
 import java.net.*;
 import java.awt.Color;
 import java.io.*;
 import java.util.*;
-import misc.Message;
-import serverside.Server;
-import misc.Chatroom;
-import misc.Client;
+import shared.*;
 
 public class ClientNetworkManager extends Client{
 	
 	private final String IP = "127.0.0.1";
 	private final int PORT = 6000;	
-	static ArrayList<Chatroom> chatroomList;
-	
-	//request chatrooms whenver need to,
+	static ArrayList<Chatroom> chatroomList = new ArrayList<Chatroom>(0);
 	
 	public ClientNetworkManager()
 	{
@@ -74,34 +69,6 @@ public class ClientNetworkManager extends Client{
 		}
 	}
 
-// POLLING DEPRECATED 
-//	public void fetchChatroomList()
-//	{
-//		System.out.println("requesting chatroom list...");
-//		Message chatroomRequest = new Message(chatroomList.toString(), username, Message.CHATROOM_LIST_REQUEST);
-//		sendMessage(chatroomRequest);
-//		System.out.println("awaiting chatroom...");
-//	}
-	
-//	private ArrayList<ArrayList<String>> readChatRoomList()
-//	{
-//		try
-//		{
-//			return (ArrayList<ArrayList<String>>) inputStream.readObject();
-//		}
-//		catch (IOException e)
-//		{
-//			System.out.println("InputStream is closed");
-//			e.printStackTrace();
-//			return null;
-//		}
-//		catch (ClassNotFoundException e)
-//		{
-//			System.out.println("Incompatible object cast");
-//			e.printStackTrace();
-//			return null;
-//		}
-//	}
 	
 	public void read()
 	{
@@ -158,6 +125,7 @@ public class ClientNetworkManager extends Client{
 			else
 			{
 				chatroomList =  (ArrayList<Chatroom>) incoming;
+				ClientGUI.updateServerList();
 			}
 		}
 		catch (IOException e)

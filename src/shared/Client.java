@@ -1,9 +1,9 @@
-package misc;
+package shared;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 
-import serverside.Server;
+import server.Server;
 
 public class Client implements Serializable{
 	
@@ -24,7 +24,6 @@ public class Client implements Serializable{
 	
 	public Client()
 	{
-		System.out.println("FUCK");
 	}
 	
 	public Message readMessage()
@@ -47,7 +46,7 @@ public class Client implements Serializable{
 		}
 	}
 	
-	public synchronized boolean send(boolean isMessage, Object data)
+	public boolean send(boolean isMessage, Object data)
 	{
 		try
 		{
@@ -102,9 +101,6 @@ public class Client implements Serializable{
 	
 	public void disconnect()
 	{
-		//send disconnect message
-		//replace clients with chatrooms.get(chatroomID);
-		Server.clients.remove(this);
 		try
 		{
 			socket.close();

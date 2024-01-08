@@ -1,9 +1,5 @@
-package clientside;
+package client;
 import java.io.*;
-
-import javax.swing.SwingUtilities;
-
-import misc.Message;
 
 public class ClientListenerThread extends Thread{
 	
