@@ -35,7 +35,7 @@ public class ServerStreamingThread extends Thread{
 	private void streamChatroomToClients() throws InterruptedException
 	{
 		for (Client c: allClients) {
-			if (!c.send(false, Server.chatrooms)) {
+			if (!c.sendData(Server.chatrooms)) {
 	        	  System.out.println("Lost connection to client");
 	        	  throw new InterruptedException();
 	        }

@@ -7,6 +7,7 @@ import server.Server;
 import javax.swing.event.*;
 
 import shared.*;
+import shared.Message.command;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -25,10 +26,9 @@ public class ClientGUI {
 	//window
 	static JFrame frame;
 	static JPanel cards;
-	
+	static CardLayout cardLayout;
 	private int windowWidth = 500, windowHeight = 500;
 	private GridBagConstraints c;
-	static CardLayout cardLayout;
 	
 	//sign in
 	private final String LOGIN_TITLE = "Sign in";
@@ -51,10 +51,10 @@ public class ClientGUI {
 	private final String JOIN = "Join";
 	private final String MEMBERS = "Members";
 	
-	static JList<String> chatroomList;
-	static DefaultListModel<String>  chatroomListModel =  new DefaultListModel<>();
+	static DefaultListModel<String>  chatroomListModel =  new DefaultListModel<String>();
+	static JList<String> chatroomList = new JList<String>(chatroomListModel);
 	
-	private DefaultListModel<String>  participantsListModel_SL =  new DefaultListModel<>();
+	private DefaultListModel<String>  participantsListModel_SL =  new DefaultListModel<String>();
 	
 	//messagingPage
 	private final String MESSAGING_PAGE_TITLE = "TITLE";
@@ -64,21 +64,19 @@ public class ClientGUI {
 	static JTextPane leftTextPanel;
 	
 	private JTextField messageInput;
-	private DefaultListModel<String>  participantsListModel_M;
+	private DefaultListModel<String>  participantsListModel_M =  new DefaultListModel<String>();
 	
 	
-	public static int selectedServer = 0;
+	static int selectedServer = 0;
 	
 	private ClientNetworkManager networkManager;
 	
-	public ClientGUI(ClientNetworkManager networkManager)
-	{
+	public ClientGUI(ClientNetworkManager networkManager) {
 		initialiseGUI();
 		this.networkManager = networkManager;
 	}
 	
-	private void resetGridConstraints(GridBagConstraints c)
-	{
+	private void resetGridConstraints(GridBagConstraints c) {
 		c.gridx = 0;
 		c.gridy = 0;
 		c.gridwidth = 1; // default value
@@ -92,37 +90,27 @@ public class ClientGUI {
 		c.ipady = 0; // default value
 	}
 	
-	private void initialiseGUI()
-	{
-  	  	System.out.println(SwingUtilities.isEventDispatchThread());
-		//window
+	private void initialiseGUI() {
 		c = new GridBagConstraints();
 		frame = new JFrame("Retro Chatroom");
 		frame.setSize(windowWidth, windowHeight);
-		//cards
+		Image icon = Toolkit.getDefaultToolkit().getImage(windowIcon);    
+		frame.setIconImage(icon);    
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setVisible(true);
+		
 		cards = new JPanel(new CardLayout());
 		frame.add(cards);
 		
-		
-		//card initialization
 		initialiseLogIn();
 		initialiseServerList();
 		initialiseMessagingPage();
 		
-		
 		cardLayout = (CardLayout)(cards.getLayout());
 		cardLayout.show(cards,Cards.LOGIN_CARD.toString());
-		
-		
-		Image icon = Toolkit.getDefaultToolkit().getImage(windowIcon);    
-		frame.setIconImage(icon);    
-		
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setVisible(true);
 	}
 	
-	private void initialiseMessagingPage()
-	{
+	private void initialiseMessagingPage() {
 		//clean up
 		resetGridConstraints(c);
 		
@@ -190,12 +178,10 @@ public class ClientGUI {
 		messagePage.add(rightParticipantsPanel, BorderLayout.EAST);
 		messagePage.add(messagingPageController,BorderLayout.SOUTH);
 		//insert into card layout
-		cards.add(messagePage,Cards.MESSAGING_CARD.toString() );
-		
+		cards.add(messagePage,Cards.MESSAGING_CARD.toString() );	
 	}
 	
-	private void initialiseServerList()
-	{
+	private void initialiseServerList() {
 		//cleanup
 		resetGridConstraints(c);
 		
@@ -218,7 +204,6 @@ public class ClientGUI {
 		serverListTitle.setFont(serverListTitle.getFont().deriveFont(20.0f));
 		serverListTitle.setHorizontalAlignment(JLabel.LEFT);
 		//list
-		chatroomList = new JList(chatroomListModel);
 		JScrollPane chatroomScrollPane = new JScrollPane(chatroomList);
 		chatroomList.addListSelectionListener(new ServerSelectListener());
 		//controller
@@ -257,8 +242,7 @@ public class ClientGUI {
 		cards.add(serverListPage, Cards.SERVERLIST_CARD.toString());
 	}
 	
-	private void initialiseLogIn()
-	{
+	private void initialiseLogIn() {
 		//cleanup
 		resetGridConstraints(c);
 		
@@ -317,93 +301,59 @@ public class ClientGUI {
 		
 	}
 	
-	public static void serverUnavailable()
-	{
+	static void serverUnavailable() {
 		JOptionPane.showMessageDialog(frame, "Server is currently down");
 	}
 	
-	public static void updateServerList()
-	{
+	static void updateServerList() {
 		//SUPER INEFFECTIVE and INEFFICIENT and shit 
 		chatroomListModel.clear();
-		for (Chatroom room : ClientNetworkManager.chatroomList)
-		{
-			chatroomListModel.addElement("chatroomID: " + room.getChatroomID() + " ---- members: " + room.getParticipants().size());
+		for (Chatroom room : ClientNetworkManager.chatroomList) {
+			String elementValue = "chatroomID: " + room.getChatroomID() + " ---- members: " + room.getParticipants().size();
+			chatroomListModel.addElement(elementValue);
 		}
 		
   	  	chatroomList.setSelectedIndex(selectedServer);	
-		
 	}
 	
-	private void displayParticipants(int selectedID)
-	{
-		
+	private void displayParticipants(int selectedID) {
 		participantsListModel_SL.clear();
 		participantsListModel_M.clear();
 		
-		for (Client client : ClientNetworkManager.chatroomList.get(selectedID).getParticipants())
-		{
+		for (Client client : ClientNetworkManager.chatroomList.get(selectedID).getParticipants()){
 			participantsListModel_SL.addElement(client.getUsername());
 			participantsListModel_M.addElement(client.getUsername());
 		}
 	}
 	
-	public static void successfulLogin()
-	{
+	static void successfulLogin() {
 		authorisationResult.setText(AUTHORISED);
 		submit.setEnabled(false);
-		//go to next page
 		cardLayout.show(cards,Cards.SERVERLIST_CARD.toString());
 	}
 	
-	public static void unsuccessfulLogin()
-	{
+	static void unsuccessfulLogin() {
 		authorisationResult.setText(UNAUTHORISED);
 		passwordField.setText("");
 	}
 	
-	public static void blockedLogin()
-	{
+	static void blockedLogin() {
 		authorisationResult.setText(BLOCKED_LOGIN);
 		submit.setEnabled(false);
 	}
 	
-	public static void joinChatroom()
-	{
+	static void joinChatroom() {
 		cardLayout.show(cards, Cards.MESSAGING_CARD.toString());
 	}
 	
-	public static void exitChatroom()
-	{
+	static void exitChatroom() {
 		cardLayout.show(cards, Cards.SERVERLIST_CARD.toString());
 	}
 	
-	
-	class LoginButtonListener implements ActionListener
-	{
-		public void actionPerformed(ActionEvent event)
-		{
-			String username = usernameField.getText();
-			String password = new String(passwordField.getPassword());
-			
-			networkManager.setUsername(username);
-			
-			try
-			{
-				Message logInRequest = new Message(username+"?"+password, username, Message.LOGIN_REQUEST);
-				networkManager.sendMessage(logInRequest);
-			}
-			catch(Exception e)
-			{
-				blockedLogin();
-			}
-						
-		}
-	}
-	
-	public static void updateTextArea(Message incomingMessage, Color colour)
-	{
-		String message = incomingMessage.getSender() + " : " + incomingMessage.getMessageBody() + "\n";
+	static void updateTextArea(Message incomingMessage, Color colour) {
+		String message = incomingMessage.getFormatedTimestamp() + 
+				         incomingMessage.getSender() + " : " + 
+				         incomingMessage.getMessageBody() + "\n";
 		StyledDocument doc = leftTextPanel.getStyledDocument();
 
         Style style = leftTextPanel.addStyle("Color Style", null);
@@ -417,45 +367,58 @@ public class ClientGUI {
         }  
 	}	
 	
-	class JoinButtonListener implements ActionListener
-	{
-		public void actionPerformed(ActionEvent event)
-		{
-			networkManager.setConnectedChatroomID(Character.getNumericValue(chatroomList.getSelectedValue().charAt(12)));
-			networkManager.sendMessage(new Message(Integer.toString(networkManager.getConnectedChatroomID()), networkManager.getUsername(), Message.JOIN_CHATROOM_REQUEST));
+	class LoginButtonListener implements ActionListener {
+		public void actionPerformed(ActionEvent event) {
+			String username = usernameField.getText();
+			String password = new String(passwordField.getPassword());
+			networkManager.setUsername(username);
+			try {
+				Message logInRequest = new Message(username+"?"+password, username, command.LOGIN_REQUEST);
+				networkManager.sendData(logInRequest);
+			}
+			catch(Exception e) {
+				blockedLogin();
+			}		
 		}
 	}
-	class LeaveButtonListener implements ActionListener
-	{
-		public void actionPerformed(ActionEvent event)
-		{
-			networkManager.sendMessage(new Message(Integer.toString(networkManager.getConnectedChatroomID()), networkManager.getUsername(), Message.EXIT_CHATROOM_REQUEST));
+	
+	class JoinButtonListener implements ActionListener {
+		public void actionPerformed(ActionEvent event) {
+			
+			if (chatroomList.isSelectionEmpty()) {
+				return;
+			}
+			
+			networkManager.setConnectedChatroomID(Character.getNumericValue(chatroomList.getSelectedValue().charAt(12)));
+			Message joinChatroomRequest = new Message(Integer.toString(networkManager.getConnectedChatroomID()), networkManager.getUsername(), command.JOIN_CHATROOM_REQUEST);
+			networkManager.sendData(joinChatroomRequest);
+		}
+	}
+	
+	class LeaveButtonListener implements ActionListener {
+		public void actionPerformed(ActionEvent event) {
+			Message leaveChatroomRequest = new Message(Integer.toString(networkManager.getConnectedChatroomID()), networkManager.getUsername(), command.EXIT_CHATROOM_REQUEST);
+			networkManager.sendData(leaveChatroomRequest);
 			leftTextPanel.setText("");
 		}
 	}
 	
-	class SendButtonListener implements ActionListener
-	{
-		public void actionPerformed(ActionEvent event)
-		{
-			networkManager.sendMessage(new Message(messageInput.getText(), networkManager.getUsername()));
+	class SendButtonListener implements ActionListener {
+		public void actionPerformed(ActionEvent event) {
+			Message messageData = new Message(messageInput.getText(), networkManager.getUsername());
+			networkManager.sendData(messageData);
 			messageInput.setText("");
 		}
 	}
 	
-	class ServerSelectListener implements ListSelectionListener
-	{
-		public void valueChanged(ListSelectionEvent event)
-		{
-			if (!event.getValueIsAdjusting())
-			{
-				if (chatroomList.getSelectedIndex()!= -1)
-				{
+	class ServerSelectListener implements ListSelectionListener {
+		public void valueChanged(ListSelectionEvent event) {
+			if (!event.getValueIsAdjusting()) {
+				if (chatroomList.getSelectedIndex()!= -1) {
 					displayParticipants(Character.getNumericValue(chatroomList.getSelectedValue().charAt(12)));
 					selectedServer = chatroomList.getSelectedIndex();
 				}
-				else
-				{
+				else {
 					chatroomList.setSelectedIndex(selectedServer);
 				}
 

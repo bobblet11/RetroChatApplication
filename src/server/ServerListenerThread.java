@@ -1,6 +1,9 @@
 package server;
 import java.io.*;
 import shared.*;
+import shared.Message.command;
+import shared.Message.type;
+import shared.Message.states;
 
 
 public class ServerListenerThread extends Thread{
@@ -20,7 +23,7 @@ public class ServerListenerThread extends Thread{
 	
 	public void run()
 	{				
-		while(true){
+		while(true) {
 			currentMsg = thisClient.readMessage();
 
 			if (currentMsg == null || !Server.serverStreamingThread.isAlive()){
@@ -29,15 +32,14 @@ public class ServerListenerThread extends Thread{
 			}
 			
 			switch ( currentMsg.getCommandType()) {
-			
-			
-				case Message.NULL_COMMAND_TYPE: {
+		
+				case NULL: {
 					sendToEveryone(currentMsg);
 					break;
 				}
 			
 				
-				case Message.JOIN_CHATROOM_REQUEST: {
+				case JOIN_CHATROOM_REQUEST: {
 					thisClient.setConnectedChatroomID(Integer.parseInt(currentMsg.getMessageBody()));
 					System.out.println("[" + this.getName() + "]\t" 
 									   +thisClient.getUsername() 
@@ -45,50 +47,59 @@ public class ServerListenerThread extends Thread{
 					
 					Server.chatrooms.get(thisClient.getConnectedChatroomID()).addClient(thisClient);
 						
-					thisClient.send(true, new Message(Message.APPROVED, Message.FROM_SERVER, Message.JOIN_CHATROOM_REQUEST));
-					sendToEveryone(new Message(thisClient.getUsername() + " has joined.", Message.FROM_SERVER));
+					Message succesfulJoinReply = new Message(states.APPROVED.toString(), Message.SERVER, command.JOIN_CHATROOM_REQUEST);
+					thisClient.sendData(succesfulJoinReply);
+					
+					Message serverAnnouncement = new Message(thisClient.getUsername() + " has joined.", Message.SERVER);
+					sendToEveryone(serverAnnouncement);
 					break;
 				}
 				
 				
-				case Message.EXIT_CHATROOM_REQUEST: {
+				case EXIT_CHATROOM_REQUEST: {
 					System.out.println("[" + this.getName() + "]\t" 
 							   +thisClient.getUsername() 
 							   + " has left " + thisClient.getConnectedChatroomID());
 					
 					Server.chatrooms.get(thisClient.getConnectedChatroomID()).removeClient(thisClient);
 					
-					thisClient.send(true, new Message(Message.APPROVED, Message.FROM_SERVER, Message.EXIT_CHATROOM_REQUEST));
-					sendToEveryone(new Message(thisClient.getUsername() + " has left.", Message.FROM_SERVER));
+					Message succesfulExitReply = new Message(states.APPROVED.toString(), Message.SERVER, command.EXIT_CHATROOM_REQUEST);
+					thisClient.sendData(succesfulExitReply);
+					
+					Message serverAnnouncment = new Message(thisClient.getUsername() + " has left.", Message.SERVER);
+					sendToEveryone(serverAnnouncment);
 					
 					thisClient.setConnectedChatroomID(-1);
 					break;
 				}
 				
 				
-				case Message.LOGIN_REQUEST:{
+				case LOGIN_REQUEST: {
 					if (loginAttempts >MAX_LOGIN_ATTEMPTS){
 						Server.chatrooms.get(thisClient.getConnectedChatroomID()).removeClient(thisClient);;
 						thisClient.disconnect();
 						return;
 					}
 					
-					if (authorised){
-						break;
-					}
+					if (authorised){	break;    }
 					
+					Message reply = null;
 					if (lookUpAccounts()){
-						thisClient.send(true, new Message(Message.APPROVED, Message.FROM_SERVER, Message.LOGIN_REQUEST));
+						reply = new Message(states.APPROVED.toString(), Message.SERVER, command.LOGIN_REQUEST);
+						thisClient.sendData(reply);
 						authorised = true;
 					}
 					else{
-						thisClient.send(true, new Message(Message.REJECTED, Message.FROM_SERVER, Message.LOGIN_REQUEST));
+						reply = new Message(states.REJECTED.toString(), Message.SERVER, command.LOGIN_REQUEST);
+						thisClient.sendData(reply);
 						authorised = false;
 					}
 					
 					loginAttempts++;
 					break;
 				}
+				
+				default: break;
 				
 				
 			}
@@ -98,7 +109,7 @@ public class ServerListenerThread extends Thread{
 	
 	private void sendToEveryone(Message message) {
 		for (Client c : Server.chatrooms.get(thisClient.getConnectedChatroomID()).getParticipants()) {
-			c.send(true, message);
+			c.sendData(message);
 		}
 	}
 	

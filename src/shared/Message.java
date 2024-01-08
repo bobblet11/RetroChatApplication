@@ -5,20 +5,26 @@ public class Message implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	public final static int STANDARD = 0;
-	public final static int SERVER_COMMAND = 1;
-	public final static int NULL_COMMAND_TYPE = -1;
+	public enum type
+	{
+		STANDARD,
+		COMMAND,
+	}
 	
-	//types of commands
-	public final static int CHATROOM_LIST_REQUEST = 0;
-	public final static int JOIN_CHATROOM_REQUEST = 1;
-	public final static int EXIT_CHATROOM_REQUEST = 2;
-	public final static int LOGIN_REQUEST = 3;
+	public enum command
+	{
+		CHATROOM_LIST_REQUEST,
+		JOIN_CHATROOM_REQUEST,
+		EXIT_CHATROOM_REQUEST,
+		LOGIN_REQUEST,
+		NULL
+	}
 	
-	public final static String FROM_SERVER = "SERVER";
-	
-	public final static String APPROVED ="APPROVE";
-	public final static String REJECTED = "REJECT";
+	public enum states
+	{
+		APPROVED,
+		REJECTED
+	}
 	
 	private final int YEAR = 0;
 	private final int MONTH = 1;
@@ -27,17 +33,19 @@ public class Message implements Serializable {
 	private final int MINUTE = 4;
 	private final int SECOND = 5;
 	
-	private int commandType;
-	private int messageType;
+	command commandType;
+	type messageType;
+	
+	public final static String SERVER = "SERVER";
 	private int[] timeStamp = {-1,-1,-1,-1,-1,-1};
+	
 	private String sender;
 	private String message;
 	
-	//for server commands, prefixed with /
-	public Message(String message, String sender, int commandType)
+	public Message(String message, String sender, command commandType)
 	{
 		createTimestamp();
-		this.messageType = SERVER_COMMAND;
+		this.messageType = type.COMMAND;
 		this.sender = sender;
 		this.message = message;
 		this.commandType = commandType;
@@ -47,10 +55,10 @@ public class Message implements Serializable {
 	public Message(String message, String sender)
 	{
 		createTimestamp();
-		this.messageType = STANDARD;
+		this.messageType = type.STANDARD;
 		this.sender = sender;
 		this.message = message;
-		this.commandType = NULL_COMMAND_TYPE;
+		this.commandType = command.NULL;
 	}
 		
 	private void createTimestamp()
@@ -62,6 +70,13 @@ public class Message implements Serializable {
 		timeStamp[3] = time.getHour();
 		timeStamp[4] = time.getMinute();
 		timeStamp[5] = time.getSecond();
+	}
+	
+	public String getFormatedTimestamp()
+	{
+		return String.format("[ %d - %d - %d###%d:%d:%d ]", 
+		timeStamp[YEAR], timeStamp[MONTH], timeStamp[DAY], 
+		timeStamp[HOUR], timeStamp[MINUTE], timeStamp[SECOND]);
 	}
 	
 	public int getHour()
@@ -79,7 +94,7 @@ public class Message implements Serializable {
 		return timeStamp[SECOND];
 	}
 	
-	public int getCommandType()
+	public command getCommandType()
 	{
 		return commandType;
 	}
@@ -94,29 +109,14 @@ public class Message implements Serializable {
 		return message;
 	}
 	
-	public int getType()
+	public type getType()
 	{
 		return messageType;
 	}
-	
-	private String formatTime()
-	{
-		return String.format("%d - %d - %d###%d:%d:%d", 
-		timeStamp[YEAR], timeStamp[MONTH], timeStamp[DAY], 
-		timeStamp[HOUR], timeStamp[MINUTE], timeStamp[SECOND]);
-	}
-	
-	public void printMessageStatus()
-	{
-		String output = String.format("%s sent a %s containing %s at %s", 
-		sender, messageType == STANDARD ? "MESSAGE" : "COMMAND", message, formatTime());
 		
-		System.out.println(output);
-	}
-	
 	public boolean logInIsApproved()
 	{
-		if (message.equals(APPROVED) && sender.equals(FROM_SERVER) && commandType == Message.LOGIN_REQUEST)
+		if (message.equals(states.APPROVED.toString()) && sender.equals(SERVER) && commandType == command.LOGIN_REQUEST)
 		{
 			return true;
 		}
@@ -125,7 +125,7 @@ public class Message implements Serializable {
 	
 	public boolean joinChatroomIsApproved()
 	{
-		if (message.equals(APPROVED) && sender.equals(FROM_SERVER) && commandType == Message.JOIN_CHATROOM_REQUEST)
+		if (message.equals(states.APPROVED.toString()) && sender.equals(SERVER) && commandType == command.JOIN_CHATROOM_REQUEST)
 		{
 			return true;
 		}
@@ -134,7 +134,7 @@ public class Message implements Serializable {
 	
 	public boolean exitChatroomIsApproved()
 	{
-		if (message.equals(APPROVED) && sender.equals(FROM_SERVER) && commandType == Message.EXIT_CHATROOM_REQUEST)
+		if (message.equals(states.APPROVED.toString()) && sender.equals(SERVER) && commandType == command.EXIT_CHATROOM_REQUEST)
 		{
 			return true;
 		}
