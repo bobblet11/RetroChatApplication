@@ -34,12 +34,14 @@ public class ServerStreamingThread extends Thread{
 	
 	private void streamChatroomToClients() throws InterruptedException
 	{
-		for (Client c: allClients) {
-			if (!c.sendData(Server.chatrooms)) {
+		for (int i = 0; i<allClients.size(); i++) {
+			if (!allClients.get(i).sendData(Server.chatrooms)) {
 	        	  System.out.println("Lost connection to client");
-	        	  throw new InterruptedException();
+	        	  allClients.remove(i);
 	        }
 		}
+		
+	
 	}
 	
 	

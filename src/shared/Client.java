@@ -56,6 +56,7 @@ public class Client implements Serializable{
 	}
 		
 	public void disconnect() {
+		
 		try {
 			socket.close();
 			outputStream.close();

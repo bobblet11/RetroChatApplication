@@ -26,8 +26,27 @@ public class ServerListenerThread extends Thread{
 		while(true) {
 			currentMsg = thisClient.readMessage();
 
-			if (currentMsg == null || !Server.serverStreamingThread.isAlive()){
+			if (currentMsg == null){
 				System.out.println("terminating " + this.getName()  + "\n- - - - - - -");
+				ServerStreamingThread.allClients.remove(thisClient);
+				
+				if (thisClient.getConnectedChatroomID() != -1)
+				{
+					Server.chatrooms.get(thisClient.getConnectedChatroomID()).removeClient(thisClient);;
+				}
+				
+				thisClient.disconnect();
+				return;
+			}
+			
+			if (!Server.serverStreamingThread.isAlive())
+			{
+				System.out.println("terminating " + this.getName()  + "\n- - - - - - -");
+				if (thisClient.getConnectedChatroomID() != -1)
+				{
+					Server.chatrooms.get(thisClient.getConnectedChatroomID()).removeClient(thisClient);;
+				}
+				thisClient.disconnect();
 				return;
 			}
 			

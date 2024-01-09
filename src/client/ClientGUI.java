@@ -60,8 +60,9 @@ public class ClientGUI {
 	private final String MESSAGING_PAGE_TITLE = "TITLE";
 	private final String SEND = "Send";
 	private final String LEAVE = "Leave";
-	private final int textPanelCharWidth = 100;
-	
+	private static final String UNKNOWN_ROOM = "UNKNOWN ID";
+	static JLabel messagingPageTitle;
+	static String currentChatroom = UNKNOWN_ROOM;
 	static JTextPane leftTextPanel;
 	
 	private JTextField messageInput;
@@ -117,52 +118,81 @@ public class ClientGUI {
 		
 		//loading widgets
 		//page
-		JPanel messagePage = new JPanel(new BorderLayout());
+		JPanel messagePage = new JPanel(new GridBagLayout());
+		int UIwidth = 400;
+		int UIheight = 400;
 		
-		
-		//page top section
-		JPanel top = new JPanel(new BorderLayout());
+		//TOP
 		//page title
-		JLabel messagingPageTitle = new JLabel(MESSAGING_PAGE_TITLE);
+		messagingPageTitle = new JLabel(UNKNOWN_ROOM);
 		messagingPageTitle.setFont(messagingPageTitle.getFont().deriveFont(40.0f));
 		messagingPageTitle.setHorizontalAlignment(JLabel.CENTER);
-		//server leave button
+		messagingPageTitle.setPreferredSize(new Dimension(UIwidth, 50));
+		
+//		//server leave button
+//		JButton leaveChatroomButton = new JButton(LEAVE);
+//		leaveChatroomButton.addActionListener(new LeaveButtonListener());
+//		leaveChatroomButton.setPreferredSize(new Dimension(50, 20));
+//		//adding to top section
+//		c.gridx=1; c.gridy = 0; c.gridwidth=2; 
+//		top.add(messagingPageTitle, c);
+//		c.gridx=3; c.gridy = 0; c.gridwidth=1; c.ipadx = 25; c.ipady = 10;
+//		top.add(leaveChatroomButton,c);
+//		resetGridConstraints(c);
+//		
+		//LEFT
+		//messaging
+		int textingWidth = 250; int textingHeight = 300;
+		int buttonWidth = 20; int buttonHeight = 20;
+		JPanel leftMessagingPanel = new JPanel(new GridBagLayout());
+		leftMessagingPanel.setPreferredSize(new Dimension(textingWidth, textingHeight));
+		//leave button
 		JButton leaveChatroomButton = new JButton(LEAVE);
 		leaveChatroomButton.addActionListener(new LeaveButtonListener());
-		//adding to top section
-		top.add(messagingPageTitle,BorderLayout.CENTER);
-		top.add(leaveChatroomButton,BorderLayout.EAST);
-		
-		
-		//messaging
+		leaveChatroomButton.setPreferredSize(new Dimension(textingWidth, buttonHeight));
 		//texting area
 		leftTextPanel = new JTextPane();
-		leftTextPanel.setPreferredSize(new Dimension(100, 10));
 		leftTextPanel.setEditable(false);
 		JScrollPane scrollMessages = new JScrollPane(leftTextPanel);
 		scrollMessages.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-		scrollMessages.setPreferredSize(new Dimension(280, 450));
+		scrollMessages.setPreferredSize(new Dimension(textingWidth, textingHeight - buttonHeight));
+		//adding
+		c.gridx = 0; c.gridy = 0;
+		leftMessagingPanel.add(leaveChatroomButton, c);
+		c.gridx = 0; c.gridy = 1;
+		leftMessagingPanel.add(scrollMessages, c);
+		resetGridConstraints(c);
 		
-		
+		//RIGHT
 		//chat-room info
 		//panel
-		JPanel rightParticipantsPanel = new JPanel(new BorderLayout());
-		rightParticipantsPanel.setPreferredSize(new Dimension(180, 450));
+		int participantsWidth = 150; int participantsHeight = 300;
+		JPanel rightParticipantsPanel = new JPanel(new GridBagLayout());
+		rightParticipantsPanel.setPreferredSize(new Dimension(participantsWidth, participantsHeight));
 		//title
+		int titleHeight = 20;
 		JLabel memberListTitle2 = new JLabel(MEMBERS);
-		memberListTitle2.setFont(memberListTitle2.getFont().deriveFont(20.0f));
+		memberListTitle2.setFont(memberListTitle2.getFont().deriveFont(15.0f));
 		memberListTitle2.setHorizontalAlignment(JLabel.LEFT);
+		memberListTitle2.setPreferredSize(new Dimension(participantsWidth, titleHeight));
 		//JList
 		participantsListModel_M = new DefaultListModel<>();
 		JList<String> participantsList2 = new JList(participantsListModel_M);
 		JScrollPane participantsScrollPane2 = new JScrollPane(participantsList2);
+		participantsScrollPane2.setPreferredSize(new Dimension(participantsWidth, participantsHeight - titleHeight));
 		//adding
-		rightParticipantsPanel.add(memberListTitle2, BorderLayout.NORTH);
-		rightParticipantsPanel.add(participantsScrollPane2, BorderLayout.CENTER);
+		c.gridx = 0; c.gridy = 0;
+		rightParticipantsPanel.add(memberListTitle2, c);
+		c.gridx = 0; c.gridy = 1;
+		rightParticipantsPanel.add(participantsScrollPane2, c);
+		resetGridConstraints(c);
 		
-		
-		//bottom page-controller
+	
+		//BOTTOm
+		int controllerWidth = 400; int controllerHeight = 50;
+		//page-controller
 		JPanel messagingPageController = new JPanel();
+		messagingPageController.setPreferredSize(new Dimension(controllerWidth, controllerHeight));
 		//send button
 		JButton sendMessageButton = new JButton(SEND);
 		sendMessageButton.addActionListener(new SendButtonListener());
@@ -171,13 +201,18 @@ public class ClientGUI {
 		//adding
 		messagingPageController.add(messageInput);
 		messagingPageController.add(sendMessageButton);
-		
+		resetGridConstraints(c);
 		
 		//final adding
-		messagePage.add(top,BorderLayout.NORTH);
-		messagePage.add(scrollMessages, BorderLayout.WEST);
-		messagePage.add(rightParticipantsPanel, BorderLayout.EAST);
-		messagePage.add(messagingPageController,BorderLayout.SOUTH);
+		c.gridx=0;c.gridy=0;c.gridwidth=2;c.gridheight=1;
+		messagePage.add(messagingPageTitle,c);
+		c.gridx=0;c.gridy=1;c.gridwidth=1;c.gridheight=1;
+		c.ipadx = 25;
+		messagePage.add(leftMessagingPanel, c);
+		c.gridx=1;c.gridy=1;c.gridwidth=1;c.gridheight=1; 
+		messagePage.add(rightParticipantsPanel, c);
+		c.gridx=0;c.gridy=2;c.gridwidth=2;c.gridheight=1;
+		messagePage.add(messagingPageController,c);
 		//insert into card layout
 		cards.add(messagePage,Cards.MESSAGING_CARD.toString() );	
 	}
@@ -188,57 +223,80 @@ public class ClientGUI {
 		
 		//loading widgets
 		//page
-		JPanel serverListPage = new JPanel(new BorderLayout());
+		JPanel serverListPage = new JPanel(new GridBagLayout());
 		
-		
+		//TOP
 		//page title
 		JLabel serverListPageTitle = new JLabel(SERVERPAGE_TITLE);
 		serverListPageTitle.setFont(serverListPageTitle.getFont().deriveFont(40.0f));
 		serverListPageTitle.setHorizontalAlignment(JLabel.CENTER);
-						
+		//width 2, height 1
 		
+		
+		//LEFT
 		//list of chat-rooms
-		JPanel leftPanelForChatrooms = new JPanel(new BorderLayout());
-		leftPanelForChatrooms.setPreferredSize(new Dimension(280, 450));
+		int leftSideWidth = 200;
+		int leftSideHeight = 400;
+		JPanel leftPanelForChatrooms = new JPanel(new GridBagLayout());
 		//title
 		JLabel serverListTitle = new JLabel(SERVERLIST_TITLE);
 		serverListTitle.setFont(serverListTitle.getFont().deriveFont(20.0f));
 		serverListTitle.setHorizontalAlignment(JLabel.LEFT);
+		serverListTitle.setPreferredSize(new Dimension(leftSideWidth,50));
 		//list
 		JScrollPane chatroomScrollPane = new JScrollPane(chatroomList);
 		chatroomList.addListSelectionListener(new ServerSelectListener());
+		chatroomScrollPane.setPreferredSize(new Dimension(leftSideWidth,300));
 		//controller
 		JPanel serverPageController = new JPanel();
+		serverPageController.setPreferredSize(new Dimension(leftSideWidth, 50));
 		//join button
 		JButton join = new JButton(JOIN);
 		join.addActionListener(new JoinButtonListener());
 		//adding
 		serverPageController.add(join);
 		//adding
-		leftPanelForChatrooms.add(serverListTitle, BorderLayout.NORTH);
-		leftPanelForChatrooms.add(chatroomScrollPane, BorderLayout.CENTER);
-		leftPanelForChatrooms.add(serverPageController, BorderLayout.SOUTH);
+		c.gridx=0; c.gridy=0;
+		leftPanelForChatrooms.add(serverListTitle, c);
+		c.gridx=0; c.gridy=1;
+		leftPanelForChatrooms.add(chatroomScrollPane, c);
+		c.gridx=0; c.gridy=2;
+		leftPanelForChatrooms.add(serverPageController, c);
+		leftPanelForChatrooms.setPreferredSize(new Dimension(leftSideWidth,leftSideHeight));
+		//width 1, height 1
+		resetGridConstraints(c);
 		
-		
+		//RIGHT
 		//list of participants in chat-room
-		JPanel rightPanelForParticipants = new JPanel(new BorderLayout());
-		rightPanelForParticipants.setPreferredSize(new Dimension(180, 450));
+		int rightSideWidth = 200;
+		int rightSideHeight = 400;
+		JPanel rightPanelForParticipants = new JPanel(new GridBagLayout());
 		//title
 		JLabel memberListTitle = new JLabel(MEMBERS);
 		memberListTitle.setFont(memberListTitle.getFont().deriveFont(20.0f));
 		memberListTitle.setHorizontalAlignment(JLabel.LEFT);
+		memberListTitle.setPreferredSize(new Dimension(rightSideWidth,50));
 		//Jlist
 		JList<String> participantsList = new JList(participantsListModel_SL);
 		JScrollPane participantsScrollPane = new JScrollPane(participantsList);
-		//adding
-		rightPanelForParticipants.add(memberListTitle, BorderLayout.NORTH);
-		rightPanelForParticipants.add(participantsScrollPane);
+		participantsScrollPane.setPreferredSize(new Dimension(rightSideWidth, 300));
 		
+		//adding
+		c.gridx = 0; c.gridy = 0;
+		rightPanelForParticipants.add(memberListTitle, c);
+		c.gridx = 0; c.gridy = 1; c.insets = new Insets(0, 0, 50, 0);
+		rightPanelForParticipants.add(participantsScrollPane,c);
+		rightPanelForParticipants.setPreferredSize(new Dimension(rightSideWidth,rightSideHeight));
+		//width 1, height 1
+		resetGridConstraints(c);
 		
 		//final adding
-		serverListPage.add(serverListPageTitle, BorderLayout.NORTH);
-		serverListPage.add(leftPanelForChatrooms, BorderLayout.WEST);
-		serverListPage.add(rightPanelForParticipants,BorderLayout.EAST);
+		c.gridx = 0; c.gridy=0; c.gridheight = 1; c.gridwidth = 2;
+		serverListPage.add(serverListPageTitle, c);
+		c.gridx = 0; c.gridy = 1; c.gridheight = 1; c.gridwidth = 1; c.ipadx = 25;
+		serverListPage.add(leftPanelForChatrooms, c);
+		c.gridx = 1; c.gridy = 1; c.gridheight = 1; c.gridwidth = 1; c.ipadx = 25;
+		serverListPage.add(rightPanelForParticipants, c);
 		//insert into card layout
 		cards.add(serverListPage, Cards.SERVERLIST_CARD.toString());
 	}
@@ -247,15 +305,17 @@ public class ClientGUI {
 		//cleanup
 		resetGridConstraints(c);
 		
-		
 		//loading widgets
 		//page
 		JPanel logInPanel = new JPanel();
 		logInPanel.setLayout(new GridBagLayout());
+		logInPanel.setMaximumSize(new Dimension(400,400));
+		logInPanel.setPreferredSize(new Dimension(400,400));
 		//title
 		JLabel logInTitle = new JLabel(LOGIN_TITLE);
 		logInTitle.setFont(logInTitle.getFont().deriveFont(20.0f));
 		logInTitle.setHorizontalAlignment(JLabel.CENTER);
+		
 		//user-name
 		JLabel usernameLabel = new JLabel(USERNAME);
 		usernameField = new JTextField(20); 
@@ -345,6 +405,7 @@ public class ClientGUI {
 	
 	static void joinChatroom() {
 		cardLayout.show(cards, Cards.MESSAGING_CARD.toString());
+		messagingPageTitle.setText(currentChatroom);
 	}
 	
 	static void exitChatroom() {
@@ -391,8 +452,11 @@ public class ClientGUI {
 		public void actionPerformed(ActionEvent event) {
 			
 			if (chatroomList.isSelectionEmpty()) {
+				currentChatroom = UNKNOWN_ROOM;
 				return;
 			}
+			
+			currentChatroom = chatroomList.getSelectedValue().substring(0,13);
 			
 			networkManager.setConnectedChatroomID(Character.getNumericValue(chatroomList.getSelectedValue().charAt(12)));
 			Message joinChatroomRequest = new Message(Integer.toString(networkManager.getConnectedChatroomID()), networkManager.getUsername(), command.JOIN_CHATROOM_REQUEST);
