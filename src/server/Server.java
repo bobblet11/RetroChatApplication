@@ -19,9 +19,9 @@ public class Server {
 	public Server(){
 		getUserInput();
 		
-		chatrooms.add(new Chatroom(0));
-		chatrooms.add(new Chatroom(1));
-		chatrooms.add(new Chatroom(2));
+		chatrooms.add(new Chatroom(0, "Ben's chatroom"));
+		chatrooms.add(new Chatroom(1,"HKU secret chat group"));
+		chatrooms.add(new Chatroom(2,"Engineering group chat [2024]"));
 			
 		receiveClients();
 	}

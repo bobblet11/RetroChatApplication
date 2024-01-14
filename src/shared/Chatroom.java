@@ -6,11 +6,13 @@ public class Chatroom implements Serializable{
 	
 	private ArrayList<Client> participants = new ArrayList<Client>();
 	private int chatroomID;
+	private String chatroomName;
 	
 	public Chatroom(){}
 	
-	public Chatroom(int index) {
+	public Chatroom(int index, String name) {
 		chatroomID = index;
+		chatroomName = name;
 	}
 	
 	public void addClient(Client client) {
@@ -29,6 +31,14 @@ public class Chatroom implements Serializable{
 	
 	public int getChatroomID(){
 		return chatroomID;
+	}
+	
+	public String getChatroomName(){
+		return chatroomName;
+	}
+	
+	public void setChatroomName(String name){
+		chatroomName = name;
 	}
 	
 }
