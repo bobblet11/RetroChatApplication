@@ -12,7 +12,7 @@ public class ClientNetworkManager extends Client{
 	
 	private static final long serialVersionUID = 1L;
 	
-	private final String IP = "127.0.0.1";
+	private final String IP = "192.168.56.1";
 	private final int PORT = 6000;	
 	static ArrayList<Chatroom> chatroomList = new ArrayList<Chatroom>(0);
 	
