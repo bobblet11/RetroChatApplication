@@ -1,12 +1,11 @@
 # RetroChatApplication 💬
-![Login Showcase](https://raw.githubusercontent.com/bobblet11/RetroChatApplication/master/resources/showcaseImages/LoginPage.png)
-
 [![Made with Java](https://img.shields.io/badge/Made%20with-Java-orange.svg)](https://www.oracle.com/java/)
 [![Sockets](https://img.shields.io/badge/Uses-Sockets-blue.svg)]()
 [![Multithreading](https://img.shields.io/badge/Supports-Multithreading-purple.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform: Cross‑Network](https://img.shields.io/badge/Platform-Cross%20Network-lightgrey.svg)]()
 
+![Login Showcase](https://raw.githubusercontent.com/bobblet11/RetroChatApplication/master/resources/showcaseImages/LoginPage.png)
 A **retro‑style chat application written in Java** that uses **sockets** and **multithreading** to host asynchronous communication between clients across different networks.  
 The GUI is built using **Java Swing** and **AWT**.
 
